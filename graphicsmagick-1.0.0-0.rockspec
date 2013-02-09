@@ -1,9 +1,9 @@
 package = "graphicsmagick"
-version = "1.0-0"
+version = "1.0.0-0"
 
 source = {
    url = "git://github.com/clementfarabet/graphicsmagick",
-   tag = "1.0-0",
+   tag = "1.0.0-0",
 }
 
 description = {
