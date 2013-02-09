@@ -32,9 +32,9 @@ importing/exporting them from/to torch Tensors.
 gm = require 'graphicsmagick'
 
 -- Load image:
-image = gm.Image.new('/path/to/image.png')
+image = gm.Image('/path/to/image.png')
 -- or
-image = gm.Image.new()
+image = gm.Image()
 image:load('/path/to/image.png')
 
 -- Get dims:
@@ -54,7 +54,7 @@ tensor = image:toTensor(colorSpace, type)
 -- Create from Tensor:
 image:fromTensor(tensor)
 -- or
-image = gm.Image.new(tensor)
+image = gm.Image(tensor)
 
 -- Save back to disk:
 colorSpace = 'RGB'

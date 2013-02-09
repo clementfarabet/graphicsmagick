@@ -133,8 +133,11 @@ local Image = {
 }
 
 -- Metatable:
-local Image_mt = {
-}
+setmetatable(Image, {
+   __call = function(self,...)
+      return self.new(...)
+   end
+})
 
 -- Constructor:
 function Image.new(pathOrTensor, width, height)
@@ -157,9 +160,6 @@ function Image.new(pathOrTensor, width, height)
       image:fromTensor(pathOrTensor)
 
    end
-   
-   -- Metatable:
-   setmetatable(image, Image_mt)
   
    return image
 end
