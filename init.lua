@@ -22,7 +22,7 @@ local function convert(...)
       {arg='hflip',     type='boolean',  help='flip image horizontally'},
       {arg='quality',   type='number',   help='quality (0 to 100)',     default=90},
       {arg='benchmark', type='boolean',  help='benchmark command',      default=false},
-      {arg='verbose',   type='boolean',  help='verbose'}
+      {arg='verbose',   type='boolean',  help='verbose',                default=false}
    )
 
    -- hint input size:
@@ -42,11 +42,11 @@ local function convert(...)
          table.insert(options, '-rotate ' .. val)
       elseif cmd == 'quality' then
          table.insert(options, '-quality ' .. val)
-      elseif cmd == 'verbose' then
+      elseif cmd == 'verbose' and val then
          table.insert(options, '-verbose')
-      elseif cmd == 'vflip' then
+      elseif cmd == 'vflip' and val then
          table.insert(options, '-flip')
-      elseif cmd == 'hflip' then
+      elseif cmd == 'hflip' and val then
          table.insert(options, '-flop')
       end
    end
