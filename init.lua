@@ -22,7 +22,7 @@ local function convert(...)
       {arg='hflip',     type='boolean',  help='flip image horizontally'},
       {arg='quality',   type='number',   help='quality (0 to 100)',     default=90},
       {arg='benchmark', type='boolean',  help='benchmark command',      default=false},
-      {arg='verbose',   type='boolean',  help='verbose',                default=false}
+      {arg='verbose',   type='boolean',  help='verbose'}
    )
 
    -- hint input size:
