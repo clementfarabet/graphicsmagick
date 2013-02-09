@@ -2,12 +2,16 @@
 -- Dependencies:
 require 'sys'
 
+-- C interface:
+local gm = require 'graphicsmagick.magick'
+
 -- Detect/find GM:
 local found = sys.execute('which gm'):find('gm')
 if not found then
    error 'gm (GraphicsMagick) binary not found, please install (see www.graphicsmagick.org)'
 end
 
+-- Command line convert:
 local function convert(...)
    -- args
    local args = dok.unpack(
@@ -69,7 +73,6 @@ local function convert(...)
 end
 
 -- Exports:
-return {
-   convert = convert
-}
+gm.convert = convert
+return gm
 

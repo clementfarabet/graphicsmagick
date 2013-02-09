@@ -25,5 +25,6 @@ build = {
    type = "builtin",
    modules = {
       ['graphicsmagick.init'] = 'init.lua',
+      ['graphicsmagick.magick'] = 'magick.lua',
    }
 }
