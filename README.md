@@ -3,6 +3,8 @@ GraphicsMagick
 
 A simple Lua wrapper to [GraphicsMagick](http://www.graphicsmagick.org).
 
+Only tested on Mac OSX, with GraphicsMagick installed via Homebrew.
+
 gm.convert
 ----------
 
