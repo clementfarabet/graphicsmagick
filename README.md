@@ -42,7 +42,18 @@ image = gm.Image()
 image:load('/path/to/image.png')
 ```
 
+Save an image to disk:
+
+```lua
+image:save('filename.ext')
+
+-- where:
+-- ext must be a know image format (jpg, JPEG, PNG, ...)
+-- (GraphicsMagick supports tons of them)
+```
+
 Create an image, from a Tensor:
+
 ```lua
 image = gm.Image(tensor,colorSpace,dimensions)
 -- or
@@ -59,14 +70,16 @@ image:load(tensor,colorSpace,dimensions)
 --                D: depth, H: height, W: width
 ```
 
-Save an image to disk:
+Export an image to a Tensor:
 
 ```lua
-image:save('filename.ext')
+image = gm.Image('path.jpg')
+image:toTensor(type,colorSpace,dimensions)
 
 -- where:
--- ext must be a know image format (jpg, JPEG, PNG, ...)
--- (GraphicsMagick supports tons of them)
+-- type : 'float', 'double', or 'byte'
+-- colorSpace : same as above
+-- dimensions : same as above
 ```
 
 In this library, we use a single function to read/write parameters
