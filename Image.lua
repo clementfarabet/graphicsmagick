@@ -148,7 +148,10 @@ function Image.new(pathOrTensor, width, height)
    end
 
    -- Create Wand:
-   image.wand = clib.NewMagickWand()
+   image.wand = ffi.gc(clib.NewMagickWand(), function(wand)
+      -- Collect:
+      clib.DestroyMagickWand(wand)
+   end)
   
    -- Arg?
    if type(pathOrTensor) == 'string' then
@@ -160,7 +163,8 @@ function Image.new(pathOrTensor, width, height)
       image:fromTensor(pathOrTensor)
 
    end
-  
+   
+   -- 
    return image
 end
 
@@ -360,16 +364,6 @@ function Image:fromTensor(tensor, colorSpace)
 
    -- Save path:
    self.path = '<tensor>'
-end
-
--- Delete image:
-function Image:delete(path)
-   -- Purge wand:
-   clib.DestroyMagickWand(self.wand)
-   -- Clean object:
-   for k,v in pairs(self) do
-      self[k] = nil
-   end
 end
 
 -- Exports:
