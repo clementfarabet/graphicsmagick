@@ -16,10 +16,12 @@ ffi.cdef
   // Pixel formats (Clement: I had to figure out these numbers, they dont match the API at all):
   typedef enum
   {
-    NoPixel,
     CharPixel,
-    DoublePixel,
+    ShortPixel,
+    IntPixel,
+    LongPixel,
     FloatPixel,
+    DoublePixel,
   } StorageType;
 
   // Resizing filters:
@@ -161,7 +163,7 @@ ffi.cdef
    const char *MagickDescribeImage( MagickWand *wand );
 ]]
 -- Load lib:
-local clib = ffi.load('MagickWand')
+local clib = ffi.load('GraphicsMagickWand')
 
 -- Initialize lib:
 clib.InitializeMagick();
@@ -254,7 +256,7 @@ function Image:size(width,height,filter)
    -- Set or get:
    if width then
       -- Get filter:
-      local filter = clib[(filter or 'Lanczos2') .. 'Filter']
+      local filter = clib[(filter or 'Cubic') .. 'Filter']
 
       -- Bounding box?
       if not height then
