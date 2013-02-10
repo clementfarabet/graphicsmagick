@@ -84,6 +84,18 @@ image:toTensor(type,colorSpace,dimensions)
 -- dimensions : same as above
 ```
 
+When exporting Tensors, we can specify the color space:
+
+```lua
+lab = image:toTensor('float', 'LAB')
+-- equivalent to:
+image:colorspace('LAB')
+lab = image:toTensor('float')
+
+-- color spaces available, for now:
+-- 'LAB', 'HSL', 'HWB' and 'YUV'
+```
+
 In this library, we use a single function to read/write parameters
 (instead of the more classical get/set). 
 
