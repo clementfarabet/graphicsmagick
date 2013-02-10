@@ -454,6 +454,19 @@ function Image:fromTensor(tensor, colorspace)
    self.path = '<tensor>'
 end
 
+-- Show:
+function Image:show(zoom)
+   -- Get Tensor from image:
+   local tensor = self:toTensor()
+
+   -- Display this tensor:
+   require 'image'
+   image.display({
+      image = tensor,
+      zoom = zoom
+   })
+end
+
 -- Exports:
 return Image
 
