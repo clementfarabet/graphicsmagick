@@ -3,6 +3,9 @@
 local ffi = require "ffi"
 ffi.cdef
 [[
+  // free
+  void free(void *);
+
   // Magick types:
   typedef void MagickWand;
   typedef int MagickBooleanType;
@@ -10,15 +13,13 @@ ffi.cdef
   typedef int size_t;
   typedef int ChannelType;
 
-  // Pixel formats:
+  // Pixel formats (Clement: I had to figure out these numbers, they dont match the API at all):
   typedef enum
   {
+    NoPixel,
     CharPixel,
-    ShortPixel,
-    IntegerPixel,
-    LongPixel,
+    DoublePixel,
     FloatPixel,
-    DoublePixel
   } StorageType;
 
   // Resizing filters:
@@ -114,7 +115,10 @@ ffi.cdef
   MagickBooleanType MagickWriteImage(MagickWand*, const char*);
   unsigned char* MagickGetImageBlob(MagickWand*, size_t*);
 
-  // Exception handling:
+  // Quality:
+  unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
+ 
+  //Exception handling:
   const char* MagickGetException(const MagickWand*, ExceptionType*);
 
   // Dimensions:
@@ -152,6 +156,9 @@ ffi.cdef
    // Colorspace:
    ColorspaceType MagickGetImageColorspace( MagickWand *wand );
    unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
+
+   // Description
+   const char *MagickDescribeImage( MagickWand *wand );
 ]]
 -- Load lib:
 local clib = ffi.load('Magick++')
@@ -173,7 +180,7 @@ setmetatable(Image, {
 })
 
 -- Constructor:
-function Image.new(pathOrTensor, width, height)
+function Image.new(pathOrTensor, ...)
    -- Create new instance:
    local image = {}
    for k,v in pairs(Image) do
@@ -189,11 +196,11 @@ function Image.new(pathOrTensor, width, height)
    -- Arg?
    if type(pathOrTensor) == 'string' then
       -- Is a path:
-      image:load(pathOrTensor, width, height)
+      image:load(pathOrTensor, ...)
    
    elseif type(pathOrTensor) == 'userdata' then
       -- Is a tensor:
-      image:fromTensor(pathOrTensor)
+      image:fromTensor(pathOrTensor, ...)
 
    end
    
@@ -217,15 +224,19 @@ function Image:load(path, width, height)
 end
 
 -- Save image:
-function Image:save(path)
+function Image:save(path, quality)
    -- Format?
-   local format = (path:gfind('%.(...)$')() or path:gfind('%.(....)$')()):upper()
-   if format == 'JPG' then format = 'JPEG' end
-   self:format(format)
+   -- local format = (path:gfind('%.(...)$')() or path:gfind('%.(....)$')()):upper()
+   -- if format == 'JPG' then format = 'JPEG' end
+   -- self:format(format)
+
+   -- Set quality:
+   quality = quality or 85
+   clib.MagickSetCompressionQuality(self.wand, quality) 
 
    -- Save:
    local status = clib.MagickWriteImage(self.wand, path)
-
+   
    -- Error?
    if status == 0 then
       error(self.name .. ': error saving image to path "' .. path .. '"')
@@ -351,7 +362,7 @@ function Image:flop()
 end
 
 -- To Tensor:
-function Image:toTensor(colorspace, dataType)
+function Image:toTensor(dataType, colorspace, dims)
    -- Torch+FII required:
    local ok = pcall(require, 'torchffi')
    if not ok then 
@@ -382,7 +393,7 @@ function Image:toTensor(colorspace, dataType)
    end
 
    -- Dest:
-   local tensor = torch[tensorType](#colorspace,height,width)
+   local tensor = torch[tensorType](height,width,#colorspace)
 
    -- Raw pointer:
    local ptx = torch.data(tensor)
@@ -391,14 +402,20 @@ function Image:toTensor(colorspace, dataType)
    clib.MagickGetImagePixels(self.wand, 
                              0, 0, width, height,
                              colorspace, clib[pixelType],
-                             ptx)
+                             ffi.cast('unsigned char *',ptx))
+
+   -- Dims:
+   if dims == 'DHW' then
+      tensor = tensor:transpose(1,3):transpose(2,3):contiguous()
+   else -- dims == 'HWD'
+   end
 
    -- Return tensor:
    return tensor
 end
 
 -- From Tensor:
-function Image:fromTensor(tensor, colorspace)
+function Image:fromTensor(tensor, colorspace, dims)
    -- Torch+FII required:
    local ok = pcall(require, 'torchffi')
    if not ok then 
@@ -406,12 +423,11 @@ function Image:fromTensor(tensor, colorspace)
    end
 
    -- Dims:
-   local height,width,depth = tensor:size(1),tensor:size(2),tensor:size(3)
-
-   -- Auto detect channels location:
-   if height < width and height < depth and height <= 4 then
-      -- Swap:
+   local height,width,depth
+   if dims == 'DHW' then
+      depth,height,width= tensor:size(1),tensor:size(2),tensor:size(3)
       tensor = tensor:transpose(1,3):transpose(1,2)
+   else -- dims == 'HWD'
       height,width,depth = tensor:size(1),tensor:size(2),tensor:size(3)
    end
    
@@ -419,7 +435,17 @@ function Image:fromTensor(tensor, colorspace)
    tensor = tensor:contiguous()
    
    -- Color space:
-   colorspace = colorspace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
+   if not colorspace then
+      if depth == 1 then
+         colorspace = 'I'
+      elseif depth == 3 then
+         colorspace = 'RGB'
+      elseif depth == 4 then
+         colorspace = 'RGBA'
+      else
+      end
+   end
+   -- any combination of R, G, B, A, C, Y, M, K, and I
    -- common colorspaces are: RGB, RGBA, CYMK, and I
 
    -- Compat:
@@ -427,6 +453,7 @@ function Image:fromTensor(tensor, colorspace)
 
    -- Type:
    local ttype = torch.typename(tensor)
+   local pixelType
    if ttype == 'torch.FloatTensor' then
       pixelType = 'FloatPixel'
    elseif ttype == 'torch.DoubleTensor' then
@@ -457,14 +484,21 @@ end
 -- Show:
 function Image:show(zoom)
    -- Get Tensor from image:
-   local tensor = self:toTensor()
-
+   local tensor = self:toTensor('float', nil,'DHW')
+   
    -- Display this tensor:
    require 'image'
    image.display({
       image = tensor,
       zoom = zoom
    })
+end
+
+-- Description:
+function Image:info()
+   -- Get information
+   local str = ffi.gc(clib.MagickDescribeImage(self.wand), ffi.C.free)
+   return ffi.string(str)
 end
 
 -- Exports:
