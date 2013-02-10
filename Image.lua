@@ -161,7 +161,7 @@ ffi.cdef
    const char *MagickDescribeImage( MagickWand *wand );
 ]]
 -- Load lib:
-local clib = ffi.load('Magick++')
+local clib = ffi.load('MagickWand')
 
 -- Initialize lib:
 clib.InitializeMagick();
