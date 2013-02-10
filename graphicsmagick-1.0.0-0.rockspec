@@ -18,7 +18,9 @@ This package provides bindings to it.
 
 dependencies = {
    "sys >= 1.0",
-   "torch >= 7.0"
+   "torch >= 7.0",
+   "image >= 1.0",
+   "torchffi >= 1.0",
 }
 
 build = {
