@@ -410,6 +410,13 @@ function Image:toTensor(dataType, colorspace, dims)
    colorspace = colorspace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
    -- common colorspaces are: RGB, RGBA, CYMK, and I
 
+   -- Other colorspaces?
+   if colorspace == 'HSL' or colorspace == 'HWB' or colorspace == 'LAB' or colorspace == 'YUV' then
+      -- Switch to colorspace:
+      self:colorspace(colorspace)
+      colorspace = 'RGB'
+   end
+
    -- Type:
    dataType = dataType or 'byte'
    local tensorType, pixelType
