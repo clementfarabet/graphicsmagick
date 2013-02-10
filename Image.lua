@@ -221,6 +221,9 @@ function Image:load(path, width, height)
 
    -- Save path:
    self.path = path
+
+   -- return self
+   return self
 end
 
 -- Save image:
@@ -241,6 +244,9 @@ function Image:save(path, quality)
    if status == 0 then
       error(self.name .. ': error saving image to path "' .. path .. '"')
    end
+
+   -- return self
+   return self
 end
 
 -- Size:
@@ -271,6 +277,9 @@ function Image:size(width,height,filter)
       if status == 0 then
          error(self.name .. ': error resizing image')
       end
+
+      -- return self
+      return self
    else
       -- Get dimensions:
       width,height = clib.MagickGetImageWidth(self.wand), clib.MagickGetImageHeight(self.wand)
@@ -285,6 +294,9 @@ function Image:depth(depth)
    if depth then
       -- Set depth:
       clib.MagickSetImageDepth(self.wand, depth)
+
+      -- return self
+      return self
    else
       -- Get depth:
       local depth = clib.MagickGetImageDepth(self.wand)
@@ -299,6 +311,9 @@ function Image:format(format)
    if format then
       -- Set format:
       clib.MagickSetImageFormat(self.wand, format)
+
+      -- return self
+      return self
    else
       -- Get format:
       format = ffi.string(clib.MagickGetImageFormat(self.wand))
@@ -340,6 +355,9 @@ function Image:colorspace(colorspace)
    if colorspace then
       -- Set format:
       clib.MagickSetImageColorspace(self.wand, clib[colorspace .. 'Colorspace'])
+
+      -- return self
+      return self
    else
       -- Get format:
       colorspace = tonumber(ffi.cast('double', clib.MagickGetImageColorspace(self.wand)))
@@ -353,12 +371,18 @@ end
 function Image:flip()
    -- Flip image:
    clib.MagickFlipImage(self.wand)
+
+   -- return self
+   return self
 end
 
 -- Flop:
 function Image:flop()
    -- Flop image:
    clib.MagickFlopImage(self.wand)
+
+   -- return self
+   return self
 end
 
 -- To Tensor:
@@ -479,6 +503,9 @@ function Image:fromTensor(tensor, colorspace, dims)
 
    -- Save path:
    self.path = '<tensor>'
+
+   -- return self
+   return self
 end
 
 -- Show:
@@ -492,6 +519,9 @@ function Image:show(zoom)
       image = tensor,
       zoom = zoom
    })
+
+   -- return self
+   return self
 end
 
 -- Description:
