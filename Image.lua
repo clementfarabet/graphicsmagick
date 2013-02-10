@@ -75,6 +75,31 @@ ffi.cdef
     GrayChannel     /* Color channels represent an intensity. */
   } ChannelType;
 
+  // Color spaces:
+  typedef enum
+  {
+    UndefinedColorspace,
+    RGBColorspace,         /* Plain old RGB colorspace */
+    GRAYColorspace,        /* Plain old full-range grayscale */
+    TransparentColorspace, /* RGB but preserve matte channel during quantize */
+    OHTAColorspace,
+    XYZColorspace,         /* CIE XYZ */
+    YCCColorspace,         /* Kodak PhotoCD PhotoYCC */
+    YIQColorspace,
+    YPbPrColorspace,
+    YUVColorspace,
+    CMYKColorspace,        /* Cyan, magenta, yellow, black, alpha */
+    sRGBColorspace,        /* Kodak PhotoCD sRGB */
+    HSLColorspace,         /* Hue, saturation, luminosity */
+    HWBColorspace,         /* Hue, whiteness, blackness */
+    LABColorspace,         /* LAB colorspace not supported yet other than via lcms */
+    CineonLogRGBColorspace,/* RGB data with Cineon Log scaling, 2.048 density range */
+    Rec601LumaColorspace,  /* Luma (Y) according to ITU-R 601 */
+    Rec601YCbCrColorspace, /* YCbCr according to ITU-R 601 */
+    Rec709LumaColorspace,  /* Luma (Y) according to ITU-R 709 */
+    Rec709YCbCrColorspace  /* YCbCr according to ITU-R 709 */
+  } ColorspaceType;
+
   // Global context:
   void MagickWandGenesis();
   void InitializeMagick();
@@ -119,6 +144,14 @@ ffi.cdef
                                      const unsigned long columns, const unsigned long rows,
                                      const char *map, const StorageType storage,
                                      unsigned char *pixels );
+
+   // Flip/Flop
+   unsigned int MagickFlipImage( MagickWand *wand );
+   unsigned int MagickFlopImage( MagickWand *wand );
+
+   // Colorspace:
+   ColorspaceType MagickGetImageColorspace( MagickWand *wand );
+   unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
 ]]
 -- Load lib:
 local clib = ffi.load('Magick++')
@@ -262,8 +295,63 @@ function Image:format(format)
    return format
 end
 
+-- Colorspaces available:
+local colorspaces = {
+   [0] = 'Undefined',
+   'RGB',
+   'GRAY',
+   'Transparent',
+   'OHTA',
+   'XYZ',
+   'YCC',
+   'YIQ',
+   'YPbPr',
+   'YUV',
+   'CMYK',
+   'sRGB',
+   'HSL',
+   'HWB',
+   'LAB',
+   'CineonLogRGB',
+   'Rec601Luma',
+   'Rec601YCbCr',
+   'Rec709Luma',
+   'Rec709YCbCr'
+}
+-- Coloispaces:
+function Image:colorspaces()
+   return colorspaces
+end
+
+-- Colorspace:
+function Image:colorspace(colorspace)
+   -- Set or get:
+   if colorspace then
+      -- Set format:
+      clib.MagickSetImageColorspace(self.wand, clib[colorspace .. 'Colorspace'])
+   else
+      -- Get format:
+      colorspace = tonumber(ffi.cast('double', clib.MagickGetImageColorspace(self.wand)))
+
+      colorspace = colorspaces[colorspace]
+   end
+   return colorspace 
+end
+
+-- Flip:
+function Image:flip()
+   -- Flip image:
+   clib.MagickFlipImage(self.wand)
+end
+
+-- Flop:
+function Image:flop()
+   -- Flop image:
+   clib.MagickFlopImage(self.wand)
+end
+
 -- To Tensor:
-function Image:toTensor(colorSpace, dataType)
+function Image:toTensor(colorspace, dataType)
    -- Torch+FII required:
    local ok = pcall(require, 'torchffi')
    if not ok then 
@@ -274,7 +362,7 @@ function Image:toTensor(colorSpace, dataType)
    local width,height = self:size()
 
    -- Color space:
-   colorSpace = colorSpace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
+   colorspace = colorspace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
    -- common colorspaces are: RGB, RGBA, CYMK, and I
 
    -- Type:
@@ -294,7 +382,7 @@ function Image:toTensor(colorSpace, dataType)
    end
 
    -- Dest:
-   local tensor = torch[tensorType](#colorSpace,height,width)
+   local tensor = torch[tensorType](#colorspace,height,width)
 
    -- Raw pointer:
    local ptx = torch.data(tensor)
@@ -302,7 +390,7 @@ function Image:toTensor(colorSpace, dataType)
    -- Export:
    clib.MagickGetImagePixels(self.wand, 
                              0, 0, width, height,
-                             colorSpace, clib[pixelType],
+                             colorspace, clib[pixelType],
                              ptx)
 
    -- Return tensor:
@@ -310,7 +398,7 @@ function Image:toTensor(colorSpace, dataType)
 end
 
 -- From Tensor:
-function Image:fromTensor(tensor, colorSpace)
+function Image:fromTensor(tensor, colorspace)
    -- Torch+FII required:
    local ok = pcall(require, 'torchffi')
    if not ok then 
@@ -331,11 +419,11 @@ function Image:fromTensor(tensor, colorSpace)
    tensor = tensor:contiguous()
    
    -- Color space:
-   colorSpace = colorSpace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
+   colorspace = colorspace or 'RGB'  -- any combination of R, G, B, A, C, Y, M, K, and I
    -- common colorspaces are: RGB, RGBA, CYMK, and I
 
    -- Compat:
-   assert(#colorSpace == depth, Image.name .. '.fromTensor: Tensor depth must match color space')
+   assert(#colorspace == depth, Image.name .. '.fromTensor: Tensor depth must match color space')
 
    -- Type:
    local ttype = torch.typename(tensor)
@@ -359,7 +447,7 @@ function Image:fromTensor(tensor, colorSpace)
    -- Export:
    clib.MagickSetImagePixels(self.wand, 
                              0, 0, width, height,
-                             colorSpace, clib[pixelType],
+                             colorspace, clib[pixelType],
                              ffi.cast("unsigned char *", ptx))
 
    -- Save path:
