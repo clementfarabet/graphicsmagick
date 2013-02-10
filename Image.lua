@@ -212,6 +212,14 @@ end
 
 -- Load image:
 function Image:load(path, width, height)
+   -- Set canvas size:
+   if width then
+      -- This gives a cue to the wand that we don't need
+      -- a large image than this. This is super cool, because
+      -- it speeds up the loading of large images by a lot.
+      clib.MagickSetSize(self.wand, width, height or width)
+   end
+
    -- Load image:
    local status = clib.MagickReadImage(self.wand, path)
    
