@@ -27,37 +27,82 @@ This is a full C interface to GraphicsMagick's Wand API. We expose one Class: th
 Image class, which allows loading and saving images, transforming them, and
 importing/exporting them from/to torch Tensors.
 
-```lua
--- Lib:
-gm = require 'graphicsmagick'
+Load library:
 
--- Load image:
+```lua
+gm = require 'graphicsmagick'
+```
+
+Create an image, from a file:
+
+```lua
 image = gm.Image('/path/to/image.png')
 -- or
 image = gm.Image()
 image:load('/path/to/image.png')
-
--- Get dims:
-width,height = image:size()
-
--- Resize:
-image:size(512,512)
-
--- Resize into box (keeps original aspect ratio):
-image:size(512)
-
--- Export to Tensor:
-type = 'byte'       -- 'double' or 'float'
-colorSpace = 'RGB'  -- 'RGBA' or 'CYMK' or 'I'
-tensor = image:toTensor(colorSpace, type)
-
--- Create from Tensor:
-image:fromTensor(tensor)
--- or
-image = gm.Image(tensor)
-
--- Save back to disk:
-colorSpace = 'RGB'
-image:save('/path/to/image.png', colorSpace)
 ```
 
+Create an image, from a Tensor:
+```lua
+image = gm.Image(tensor,colorSpace,dimensions)
+-- or
+image = gm.Image()
+image:load(tensor,colorSpace,dimensions)
+
+-- where:
+-- colorSpace is: a string made of these characters: R,G,B,A,C,Y,M,K,I
+--                (for example: 'RGB', 'RGBA', 'I', or 'BGRA', ...)
+--                R: red, G: green, ... I: intensity
+--
+-- dimensions is: a string made of these characters: D,H,W
+--                (for example: 'DHW' or 'HWD')
+--                D: depth, H: height, W: width
+```
+
+Save an image to disk:
+
+```lua
+image:save('filename.ext')
+
+-- where:
+-- ext must be a know image format (jpg, JPEG, PNG, ...)
+-- (GraphicsMagick supports tons of them)
+```
+
+In this library, we use a single function to read/write parameters
+(instead of the more classical get/set). 
+
+Here's an example of a resize:
+
+```lua
+-- get dimensions:
+width,height = image:size()
+
+-- resize:
+image:size(512,384)
+
+-- resize by only imposing the largest dimension:
+image:size(512)
+```
+
+Some basic transformations:
+
+```lua
+-- flip or flop an image:
+image:flip()
+image:flop()
+```
+
+Show an image (this makes use of Tensors, and Torch's Qt backend):
+
+```lua
+image:show()
+```
+
+One cool thing about this library is that all the functions can be cascaded.
+Here's an example:
+
+```lua
+-- Open, transform and save back:
+gm.Image('input.jpg'):flip():size(128):save('thumb.jpg')
+```
