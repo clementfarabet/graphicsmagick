@@ -373,9 +373,5 @@ function Image:delete(path)
 end
 
 -- Exports:
-local gm = {
-   clib = clib,
-   Image = Image,
-}
-return gm
+return Image
 
