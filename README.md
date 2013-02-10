@@ -44,6 +44,15 @@ image = gm.Image()
 image:load('/path/to/image.png')
 ```
 
+Create an image, from a file, with a hint about the max size to be used:
+
+```lua
+image:load('/path/to/image.png', width [, height])
+
+-- this tells the image loader that we won't need larger images than
+-- what's specified. This can speedup loading by factors of 5 to 10.
+```
+
 Save an image to disk:
 
 ```lua
