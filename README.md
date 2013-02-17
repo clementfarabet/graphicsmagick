@@ -105,6 +105,18 @@ lab = image:toTensor('float')
 -- 'LAB', 'HSL', 'HWB' and 'YUV'
 ```
 
+Images can also be read/written from/to Lua strings, or binary blobs.
+This is convenient for in memory manipulation (e.g. when downloading
+images from the web, no need to write it to disk):
+
+```lua
+blob,size = image:toBlob()
+image:fromBlob(blob,size)
+
+str = image:toString()
+image:fromString(str)
+```
+
 In this library, we use a single function to read/write parameters
 (instead of the more classical get/set). 
 

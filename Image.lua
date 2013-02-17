@@ -115,7 +115,7 @@ ffi.cdef
   MagickBooleanType MagickReadImage(MagickWand*, const char*);
   MagickBooleanType MagickReadImageBlob(MagickWand*, const void*, const size_t);
   MagickBooleanType MagickWriteImage(MagickWand*, const char*);
-  unsigned char* MagickGetImageBlob(MagickWand*, size_t*);
+  unsigned char *MagickWriteImageBlob( MagickWand *wand, size_t *length );
 
   // Quality:
   unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
@@ -395,6 +395,30 @@ function Image:flop()
    return self
 end
 
+-- Export to Blob:
+function Image:toBlob()
+   -- Size pointer:
+   local sizep = ffi.new('size_t[1]')
+
+   -- To Blob:
+   local blob = clib.MagickWriteImageBlob(self.wand, sizep)
+   
+   -- Return blob and size:
+   return blob, tonumber(sizep[0])
+end
+
+-- Export to string:
+function Image:toString()
+   -- To blob:
+   local blob, size = self:toBlob()
+
+   -- Lua string:
+   local str = ffi.string(blob,size)
+
+   -- Return string:
+   return str
+end
+
 -- To Tensor:
 function Image:toTensor(dataType, colorspace, dims)
    -- Torch+FII required:
@@ -453,6 +477,28 @@ function Image:toTensor(dataType, colorspace, dims)
 
    -- Return tensor:
    return tensor
+end
+
+-- Import from blob:
+function Image:fromBlob(blob,size)
+   -- Read from blob:
+   clib.MagickReadImageBlob(self.wand, ffi.cast('const void *', blob), size)
+   
+   -- Save path:
+   self.path = '<blob>'
+
+   -- return self
+   return self
+end
+
+-- Import from blob:
+function Image:fromString(string)
+   -- Convert blob (lua string) to C string
+   local size = #string
+   blob = ffi.new('char['..size..']', string)
+
+   -- Load blob:
+   return self:fromBlob(blob, size)
 end
 
 -- From Tensor:
