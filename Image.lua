@@ -1,4 +1,3 @@
-
 -- FFI bindings to GraphicsMagick:
 local ffi = require "ffi"
 ffi.cdef
@@ -13,7 +12,7 @@ ffi.cdef
   typedef int size_t;
   typedef int ChannelType;
 
-  // Pixel formats (Clement: I had to figure out these numbers, they dont match the API at all):
+  // Pixel formats:
   typedef enum
   {
     CharPixel,
