@@ -170,7 +170,11 @@ clib.InitializeMagick();
 -- Image object:
 local Image = {
    name = 'magick.Image',
-   path = '<>'
+   path = '<>',
+   buffers = {
+      HWD = {},
+      DHW = {},
+   }
 }
 
 -- Metatable:
@@ -419,7 +423,7 @@ function Image:toString()
 end
 
 -- To Tensor:
-function Image:toTensor(dataType, colorspace, dims)
+function Image:toTensor(dataType, colorspace, dims, nocopy)
    -- Torch+FII required:
    local ok = pcall(require, 'torchffi')
    if not ok then 
@@ -457,7 +461,11 @@ function Image:toTensor(dataType, colorspace, dims)
    end
 
    -- Dest:
-   local tensor = torch[tensorType](height,width,#colorspace)
+   local tensor = Image.buffers['HWD'][tensorType] or torch[tensorType]()
+   tensor:resize(height,width,#colorspace)
+
+   -- Cache tensor:
+   Image.buffers['HWD'][tensorType] = tensor
 
    -- Raw pointer:
    local ptx = torch.data(tensor)
@@ -470,12 +478,26 @@ function Image:toTensor(dataType, colorspace, dims)
 
    -- Dims:
    if dims == 'DHW' then
-      tensor = tensor:transpose(1,3):transpose(2,3):contiguous()
-   else -- dims == 'HWD'
+      -- Transposed Tensor:
+      local tensorDHW = Image.buffers['DHW'][tensorType] or tensor.new()
+      tensorDHW:resize(#colorspace,height,width)
+
+      -- Copy:
+      tensorDHW:copy(tensor:transpose(1,3):transpose(2,3))
+
+      -- Cache:
+      Image.buffers['DHW'][tensorType] = tensorDHW
+
+      -- Return:
+      tensor = tensorDHW
    end
 
-   -- Return tensor:
-   return tensor
+   -- Return tensor
+   if nocopy then
+      return tensor
+   else
+      return tensor:clone()
+   end
 end
 
 -- Import from blob:
