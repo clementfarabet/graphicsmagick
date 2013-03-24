@@ -131,6 +131,9 @@ image:size(512,384)
 
 -- resize by only imposing the largest dimension:
 image:size(512)
+
+-- resize by imposing the smallest dimension:
+image:size(nil,512)
 ```
 
 Some basic transformations:

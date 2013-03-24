@@ -265,7 +265,7 @@ end
 -- Size:
 function Image:size(width,height,filter)
    -- Set or get:
-   if width then
+   if width or height then
       -- Get filter:
       local filter = clib[(filter or 'Cubic') .. 'Filter']
 
@@ -275,6 +275,20 @@ function Image:size(width,height,filter)
          local box = width
          local cwidth,cheight = self:size()
          if cwidth > cheight then
+            width = box
+            height = box * cheight/cwidth
+         else
+            height = box
+            width = box * cwidth/cheight
+         end
+      end
+      
+      -- Min box?
+      if not width then
+         -- in this case, the image must cover a heightxheight box:
+         local box = height
+         local cwidth,cheight = self:size()
+         if cwidth < cheight then
             width = box
             height = box * cheight/cwidth
          else
