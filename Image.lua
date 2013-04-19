@@ -418,7 +418,7 @@ function Image:toBlob()
    local sizep = ffi.new('size_t[1]')
 
    -- To Blob:
-   local blob = clib.MagickWriteImageBlob(self.wand, sizep)
+   local blob = ffi.gc(clib.MagickWriteImageBlob(self.wand, sizep), ffi.C.free)
    
    -- Return blob and size:
    return blob, tonumber(sizep[0])
