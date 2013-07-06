@@ -22,7 +22,7 @@ local function readarg(file, arg)
 end
 
 -- Command line info:
-local function info(path)
+local function info(path,simple)
    -- parse geometry
    local format = readarg(path,'%m')
    if format == '' or format:find('^PDF') then
@@ -32,6 +32,15 @@ local function info(path)
    end
    local width = readarg(path,'%w')
    local height = readarg(path,'%h')
+
+   -- simple?
+   if simple then
+      return {
+         width = tonumber(width),
+         height = tonumber(height),
+         format = format
+      }
+   end
 
    -- parse Exif Data
    local exif = readarg(path,'%[exif:*]')
