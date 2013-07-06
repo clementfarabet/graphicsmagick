@@ -24,14 +24,13 @@ end
 -- Command line info:
 local function info(path,simple)
    -- parse geometry
-   local format = readarg(path,'%m')
+   local format = readarg(path,'"%m %w %h"')
    if format == '' or format:find('^PDF') then
       return {
          error = 'not an image'
       }
    end
-   local width = readarg(path,'%w')
-   local height = readarg(path,'%h')
+   local format,width,height = format:gfind('(%w*)%s(%d*)%s(%d*)')()
 
    -- simple?
    if simple then
