@@ -3,14 +3,11 @@
 require 'sys'
 
 -- Detect/find GM:
-local found_convert = sys.execute('which identify'):find('identify')
-local found_gm = sys.execute('which gm'):find('gm')
+local found = sys.execute('which identify'):find('identify')
 
 -- Which util:
-if found_convert then
+if found then
    util = 'identify '
-elseif found_gm then
-   util = 'gm identify '
 else
    return nil
 end
