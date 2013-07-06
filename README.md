@@ -22,6 +22,36 @@ gm.convert{
 }
 ```
 
+gm.info
+-------
+
+Similarly, gm.info(file) is a simple binding to the command line utility.
+It's handy to extra the geometry of an image, as well as its exif metadata.
+On top of it, if geolocation is found, the GPS location is nicely formatted.
+
+```lua
+gm = require 'graphicsmagick'
+info = gm.info('some.jpeg')
+print(info)
+{
+   width : 1024
+   height : 768
+   date : 2013:01:01 00:00:01
+   location :
+     {
+       longitude : W80.13
+       latitude : N25.79
+     }
+   format : JPEG
+   exif :
+     {
+        Make : Apple
+        FocalLength : 413/100
+        ...
+     }
+}
+```
+
 gm.Image
 --------
 

@@ -28,6 +28,7 @@ build = {
    modules = {
       ['graphicsmagick.init'] = 'init.lua',
       ['graphicsmagick.convert'] = 'convert.lua',
+      ['graphicsmagick.info'] = 'info.lua',
       ['graphicsmagick.Image'] = 'Image.lua',
    }
 }
