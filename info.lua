@@ -24,9 +24,14 @@ end
 -- Command line info:
 local function info(path)
    -- parse geometry
+   local format = readarg(path,'%m')
+   if format == '' or format:find('^PDF') then
+      return {
+         error = 'not an image'
+      }
+   end
    local width = readarg(path,'%w')
    local height = readarg(path,'%h')
-   local format = readarg(path,'%m')
 
    -- parse Exif Data
    local exif = readarg(path,'%[exif:*]')
