@@ -62,6 +62,10 @@ local function info(path,simple,extexif)
       -- parse GPS, and generate URLs (Google Maps for now)
       local l1,l2,l3 = exif.GPSLongitude:gfind('(.+),%s+(.+),%s+(.+)')()
       local L1,L2,L3 = exif.GPSLatitude:gfind('(.+),%s+(.+),%s+(.+)')()
+      if not l1 or not L1 then
+         l1,l2,l3 = exif.GPSLongitude:gfind('(.+) deg (.+)\' (.+)"')()
+         L1,L2,L3 = exif.GPSLatitude:gfind('(.+) deg (.+)\' (.+)"')()
+      end
       local longitude = loadstring('return ' .. l1 .. ' + ' .. l2 .. '/60 + ' .. l3 .. '/3600')()
       local latitude = loadstring('return ' .. L1 .. ' + ' .. L2 .. '/60 + ' .. L3 .. '/3600')()
       longitude = exif.GPSLongitudeRef:upper() .. longitude
