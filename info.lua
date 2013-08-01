@@ -68,8 +68,8 @@ local function info(path,simple,extexif)
       end
       local longitude = loadstring('return ' .. l1 .. ' + ' .. l2 .. '/60 + ' .. l3 .. '/3600')()
       local latitude = loadstring('return ' .. L1 .. ' + ' .. L2 .. '/60 + ' .. L3 .. '/3600')()
-      longitude = exif.GPSLongitudeRef:upper() .. longitude
-      latitude = exif.GPSLatitudeRef:upper() .. latitude
+      longitude = exif.GPSLongitudeRef:upper():sub(1,1) .. longitude
+      latitude = exif.GPSLatitudeRef:upper():sub(1,1) .. latitude
 
       -- google lookup:
       local url_google = 'https://maps.google.com/maps?q=' ..  longitude .. ',' .. latitude
