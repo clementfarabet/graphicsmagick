@@ -22,7 +22,7 @@ local function readarg(file, arg)
 end
 
 -- Command line info:
-local function info(path,simple)
+local function info(path,simple,extexif)
    -- parse geometry
    local format = readarg(path,'"%m %w %h"')
    if format == '' or format:find('^PDF') then
@@ -46,7 +46,12 @@ local function info(path,simple)
    local formatted = (exif..'\n'):gsub('exif:(.-)=(.-)\n', '["%1"] = [========[%2]========],\n ')
    local ok,exif = pcall(loadstring( 'return {'..formatted..'}' ))
    if not ok then exif = {} end
-   
+  
+   -- empty exif? use externally supplied exif
+   if not next(exif) and extexif then
+      exif = extexif
+   end
+
    -- date
    local date = exif.DateTime or exif.DateTimeOriginal or exif.DateTimeDigitized
    date = date or readarg(path,'%[date:modify]')
