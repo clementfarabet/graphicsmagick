@@ -80,6 +80,30 @@ local function info(path,simple,extexif)
          latitude = latitude,
          url_google = url_google,
       }
+   elseif exif.GPSLongitude and tonumber(exif.GPSLongitude) then
+      -- support floating point coordinates
+      local latitude = tonumber(exif.GPSLatitude)
+      if latitude < 0 then
+         latitude = 'S'..math.abs(latitude)
+      else
+         latitude = 'N'..math.abs(latitude)
+      end
+      local longitude = tonumber(exif.GPSLongitude)
+      if longitude < 0 then
+         longitude = 'W'..math.abs(longitude)
+      else
+         longitude = 'E'..math.abs(longitude)
+      end
+
+      -- google lookup:
+      local url_google = 'https://maps.google.com/maps?q=' ..  longitude .. ',' .. latitude
+
+      -- save:
+      location = {
+         longitude = longitude,
+         latitude = latitude,
+         url_google = url_google,
+      }
    end
 
    -- return info
