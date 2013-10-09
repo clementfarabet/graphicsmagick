@@ -3,7 +3,7 @@
 require 'sys'
 
 -- Detect/find GM:
-local found = sys.execute('which identify'):find('identify')
+local found = sys.fexecute('which identify'):find('identify')
 
 -- Which util:
 if found then
