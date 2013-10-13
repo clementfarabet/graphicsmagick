@@ -65,6 +65,15 @@ Load library:
 gm = require 'graphicsmagick'
 ```
 
+First, we provide two high-level functions to load/save directly into/form tensors:
+
+```lua
+img = gm.load('/path/to/image.png' [, type])    -- type = 'float' (default) | 'double' | 'byte'
+gm.save('/path/to/image.jpg' [,quality])        -- quality = 0 to 100 (for jpegs only)
+```
+
+The following provide a more controlled flow for loading/saving jpegs.
+
 Create an image, from a file:
 
 ```lua
