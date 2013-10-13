@@ -53,7 +53,7 @@ local function info(path,simple,extexif)
    end
 
    -- date
-   local date = exif.DateTime or exif.DateTimeOriginal or exif.DateTimeDigitized
+   local date = exif.DateTimeOriginal or exif.DateTimeDigitized or exif.DateTime
    date = date or readarg(path,'%[date:modify]')
   
    -- location
