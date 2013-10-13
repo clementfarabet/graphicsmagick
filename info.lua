@@ -47,9 +47,11 @@ local function info(path,simple,extexif)
    local ok,exif = pcall(loadstring( 'return {'..formatted..'}' ))
    if not ok then exif = {} end
   
-   -- empty exif? use externally supplied exif
-   if not next(exif) and extexif then
-      exif = extexif
+   -- use externally supplied exif to override some variables
+   if extexif then
+      for k,v in pairs(extexif) do
+         exif[k] = v
+      end
    end
 
    -- date
