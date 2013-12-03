@@ -68,8 +68,14 @@ local function info(path,simple,extexif)
          l1,l2,l3 = exif.GPSLongitude:gfind('(.+) deg (.+)\' (.+)"')()
          L1,L2,L3 = exif.GPSLatitude:gfind('(.+) deg (.+)\' (.+)"')()
       end
-      local longitude = loadstring('return ' .. l1 .. ' + ' .. l2 .. '/60 + ' .. l3 .. '/3600')()
-      local latitude = loadstring('return ' .. L1 .. ' + ' .. L2 .. '/60 + ' .. L3 .. '/3600')()
+      local longitude, latitude
+      if not l1 or not L1 then
+         longitude = tonumber(exif.GPSLongitude)
+         latitude = tonumber(exif.GPSLatitude)
+      else
+         longitude = loadstring('return ' .. l1 .. ' + ' .. l2 .. '/60 + ' .. l3 .. '/3600')()
+         latitude = loadstring('return ' .. L1 .. ' + ' .. L2 .. '/60 + ' .. L3 .. '/3600')()
+      end
       longitude = exif.GPSLongitudeRef:upper():sub(1,1) .. longitude
       latitude = exif.GPSLatitudeRef:upper():sub(1,1) .. latitude
 
