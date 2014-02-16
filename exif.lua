@@ -2,7 +2,6 @@
 local function parseExif(exif)
    -- date
    local date = exif.DateTimeOriginal or exif.DateTimeDigitized or exif.DateTime
-   date = date or readarg(path,'%[date:modify]')
   
    -- location
    local location
