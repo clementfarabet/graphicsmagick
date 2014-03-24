@@ -110,6 +110,7 @@ ffi.cdef
   // Magick Wand:
   MagickWand* NewMagickWand();
   MagickWand* DestroyMagickWand(MagickWand*);
+  MagickWand* CloneMagickWand( const MagickWand *wand );
 
   //
   PixelWand *NewPixelWand(void);
@@ -224,6 +225,18 @@ function Image.new(pathOrTensor, ...)
    
    -- 
    return image
+end
+
+function Image:clone()
+   local out = gm.Image()
+   for k,v in pairs(Image) do      
+      out[k] = self[k]
+   end
+   for k,v in pairs(out.buffers) do
+      v = nil
+   end
+   out.wand = clib.CloneMagickWand(self.wand)
+   return out
 end
 
 -- Load image:
