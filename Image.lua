@@ -228,7 +228,7 @@ function Image.new(pathOrTensor, ...)
 end
 
 function Image:clone()
-   local out = gm.Image()
+   local out = Image()
    for k,v in pairs(Image) do      
       out[k] = self[k]
    end
