@@ -438,12 +438,6 @@ end
 
 -- To Tensor:
 function Image:toTensor(dataType, colorspace, dims, nocopy)
-   -- Torch+FII required:
-   local ok = pcall(require, 'torchffi')
-   if not ok then 
-      error(Image.name .. '.toTensor: requires TorchFFI. Install it like this: luarocks install torchffi')
-   end
-
    -- Dims:
    local width,height = self:size()
 
@@ -538,12 +532,6 @@ end
 
 -- From Tensor:
 function Image:fromTensor(tensor, colorspace, dims)
-   -- Torch+FII required:
-   local ok = pcall(require, 'torchffi')
-   if not ok then 
-      error(Image.name .. '.toTensor: requires TorchFFI. Install it like this: luarocks install torchffi')
-   end
-
    -- Dims:
    local height,width,depth
    if dims == 'DHW' then
