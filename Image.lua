@@ -11,6 +11,7 @@ ffi.cdef
   typedef int ExceptionType;
   typedef int size_t;
   typedef int ChannelType;
+  typedef void PixelWand;
 
   // Pixel formats:
   typedef enum
@@ -109,6 +110,11 @@ ffi.cdef
   // Magick Wand:
   MagickWand* NewMagickWand();
   MagickWand* DestroyMagickWand(MagickWand*);
+  MagickWand* CloneMagickWand( const MagickWand *wand );
+
+  //
+  PixelWand *NewPixelWand(void);
+  PixelWand *DestroyPixelWand(PixelWand *wand);
   
   // Read/Write:
   MagickBooleanType MagickReadImage(MagickWand*, const char*);
@@ -153,6 +159,14 @@ ffi.cdef
    // Flip/Flop
    unsigned int MagickFlipImage( MagickWand *wand );
    unsigned int MagickFlopImage( MagickWand *wand );
+
+  // Rotate
+  unsigned int MagickRotateImage( MagickWand *wand, const PixelWand *background,
+                                const double degrees );
+
+  // Crop
+  unsigned int MagickCropImage( MagickWand *wand, const unsigned long width,
+                              const unsigned long height, const long x, const long y );
 
    // Colorspace:
    ColorspaceType MagickGetImageColorspace( MagickWand *wand );
@@ -211,6 +225,18 @@ function Image.new(pathOrTensor, ...)
    
    -- 
    return image
+end
+
+function Image:clone()
+   local out = Image()
+   for k,v in pairs(Image) do      
+      out[k] = self[k]
+   end
+   for k,v in pairs(out.buffers) do
+      v = nil
+   end
+   out.wand = clib.CloneMagickWand(self.wand)
+   return out
 end
 
 -- Load image:
@@ -407,6 +433,28 @@ end
 function Image:flop()
    -- Flop image:
    clib.MagickFlopImage(self.wand)
+
+   -- return self
+   return self
+end
+
+-- Rotate:
+function Image:rotate(deg)
+   -- Create PixelWand:
+   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+   end)
+   -- Rotate image:
+   clib.MagickRotateImage(self.wand, pixelwand, deg)
+
+   -- return self
+   return self
+end
+
+-- Crop: (http://www.graphicsmagick.org/wand/magick_wand.html#magickcropimage)
+function Image:crop(w, h, x, y)
+   clib.MagickCropImage(self.wand, w, h, x, y)
 
    -- return self
    return self
