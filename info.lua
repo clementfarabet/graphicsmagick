@@ -9,6 +9,7 @@ local found = sys.fexecute('which identify'):find('identify')
 local parseExif = require 'graphicsmagick.exif'
 
 -- Which util:
+local util
 if found then
    util = 'identify '
 else
