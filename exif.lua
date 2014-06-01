@@ -13,6 +13,11 @@ local function parseExif(exif)
          l1,l2,l3 = exif.GPSLongitude:gfind('(.+) deg (.+)\' (.+)"')()
          L1,L2,L3 = exif.GPSLatitude:gfind('(.+) deg (.+)\' (.+)"')()
       end
+      if not l1 or not L1 then
+         l1,l2 = exif.GPSLongitude:gfind('(.+),(.+)%w$')()
+         L1,L2 = exif.GPSLatitude:gfind('(.+),(.+)%w$')()
+         l3,L3 = 0,0
+      end
       local longitude, latitude
       if not l1 or not L1 then
          longitude = tonumber(exif.GPSLongitude)
