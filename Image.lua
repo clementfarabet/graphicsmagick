@@ -461,9 +461,14 @@ function Image:crop(w, h, x, y)
 end
 
 -- Export to Blob:
-function Image:toBlob()
+function Image:toBlob(quality)
    -- Size pointer:
    local sizep = ffi.new('size_t[1]')
+   
+   -- Set quality:
+   if quality then
+      clib.MagickSetCompressionQuality(self.wand, quality) 
+   end
 
    -- To Blob:
    local blob = ffi.gc(clib.MagickWriteImageBlob(self.wand, sizep), ffi.C.free)
@@ -473,9 +478,9 @@ function Image:toBlob()
 end
 
 -- Export to string:
-function Image:toString()
+function Image:toString(quality)
    -- To blob:
-   local blob, size = self:toBlob()
+   local blob, size = self:toBlob(quality)
 
    -- Lua string:
    local str = ffi.string(blob,size)
