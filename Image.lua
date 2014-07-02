@@ -464,6 +464,14 @@ end
 function Image:toBlob(quality)
    -- Size pointer:
    local sizep = ffi.new('size_t[1]')
+
+   -- Current format:
+   local fmt = self:format()
+   if fmt == 'XC' then
+      print('Image:toBlob() - cannot compress/export image with no format specified')
+      print('please call image:format(fmt) before (format = JPEG, PNG, ...')
+      error()
+   end
    
    -- Set quality:
    if quality then
