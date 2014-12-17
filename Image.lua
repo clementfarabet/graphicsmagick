@@ -174,6 +174,11 @@ ffi.cdef
   unsigned int MagickBorderImage( MagickWand *wand, const PixelWand *bordercolor,
                                 const unsigned long width, const unsigned long height );
 
+  // Processing
+  unsigned int MagickColorFloodfillImage( MagickWand *wand, const PixelWand *fill,
+                                        const double fuzz, const PixelWand *bordercolor,
+                                        const long x, const long y );
+
   // Colorspace:
   ColorspaceType MagickGetImageColorspace( MagickWand *wand );
   unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
@@ -477,6 +482,22 @@ function Image:addBorder(w, h, r, g, b)
    clib.PixelSetBlue(pixelwand, b or 0)
    -- Add border:
    clib.MagickBorderImage(self.wand, pixelwand, w, h)
+
+   -- return self
+   return self
+end
+
+function Image:floodFill(x, y, fuzz, r, g, b)
+  -- Create PixelWand:
+   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+   end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+   -- Fo flood-fill
+   clib.MagickColorFloodfillImage(self.wand, pixelwand, fuzz, nil, x, y)
 
    -- return self
    return self
