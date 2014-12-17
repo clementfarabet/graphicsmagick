@@ -106,7 +106,7 @@ ffi.cdef
   // Global context:
   void MagickWandGenesis();
   void InitializeMagick();
-  
+
   // Magick Wand:
   MagickWand* NewMagickWand();
   MagickWand* DestroyMagickWand(MagickWand*);
@@ -127,7 +127,7 @@ ffi.cdef
 
   // Quality:
   unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
- 
+
   //Exception handling:
   const char* MagickGetException(const MagickWand*, ExceptionType*);
 
@@ -159,9 +159,9 @@ ffi.cdef
                                      const char *map, const StorageType storage,
                                      unsigned char *pixels );
 
-   // Flip/Flop
-   unsigned int MagickFlipImage( MagickWand *wand );
-   unsigned int MagickFlopImage( MagickWand *wand );
+  // Flip/Flop
+  unsigned int MagickFlipImage( MagickWand *wand );
+  unsigned int MagickFlopImage( MagickWand *wand );
 
   // Rotate
   unsigned int MagickRotateImage( MagickWand *wand, const PixelWand *background,
@@ -174,12 +174,12 @@ ffi.cdef
   unsigned int MagickBorderImage( MagickWand *wand, const PixelWand *bordercolor,
                                 const unsigned long width, const unsigned long height );
 
-   // Colorspace:
-   ColorspaceType MagickGetImageColorspace( MagickWand *wand );
-   unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
+  // Colorspace:
+  ColorspaceType MagickGetImageColorspace( MagickWand *wand );
+  unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
 
-   // Description
-   const char *MagickDescribeImage( MagickWand *wand );
+  // Description
+  const char *MagickDescribeImage( MagickWand *wand );
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -217,25 +217,25 @@ function Image.new(pathOrTensor, ...)
       -- Collect:
       clib.DestroyMagickWand(wand)
    end)
-  
+
    -- Arg?
    if type(pathOrTensor) == 'string' then
       -- Is a path:
       image:load(pathOrTensor, ...)
-   
+
    elseif type(pathOrTensor) == 'userdata' then
       -- Is a tensor:
       image:fromTensor(pathOrTensor, ...)
 
    end
-   
-   -- 
+
+   --
    return image
 end
 
 function Image:clone()
    local out = Image()
-   for k,v in pairs(Image) do      
+   for k,v in pairs(Image) do
       out[k] = self[k]
    end
    for k,v in pairs(out.buffers) do
@@ -257,7 +257,7 @@ function Image:load(path, width, height)
 
    -- Load image:
    local status = clib.MagickReadImage(self.wand, path)
-   
+
    -- Error?
    if status == 0 then
       clib.DestroyMagickWand(self.wand)
@@ -280,11 +280,11 @@ function Image:save(path, quality)
 
    -- Set quality:
    quality = quality or 85
-   clib.MagickSetCompressionQuality(self.wand, quality) 
+   clib.MagickSetCompressionQuality(self.wand, quality)
 
    -- Save:
    local status = clib.MagickWriteImage(self.wand, path)
-   
+
    -- Error?
    if status == 0 then
       error(self.name .. ': error saving image to path "' .. path .. '"')
@@ -314,7 +314,7 @@ function Image:size(width,height,filter)
             width = box * cwidth/cheight
          end
       end
-      
+
       -- Min box?
       if not width then
          -- in this case, the image must cover a heightxheight box:
@@ -361,7 +361,7 @@ function Image:depth(depth)
       local depth = clib.MagickGetImageDepth(self.wand)
    end
    --
-   return depth 
+   return depth
 end
 
 -- Format:
@@ -423,7 +423,7 @@ function Image:colorspace(colorspace)
 
       colorspace = colorspaces[colorspace]
    end
-   return colorspace 
+   return colorspace
 end
 
 -- Flip:
@@ -494,15 +494,15 @@ function Image:toBlob(quality)
       print('please call image:format(fmt) before (format = JPEG, PNG, ...')
       error()
    end
-   
+
    -- Set quality:
    if quality then
-      clib.MagickSetCompressionQuality(self.wand, quality) 
+      clib.MagickSetCompressionQuality(self.wand, quality)
    end
 
    -- To Blob:
    local blob = ffi.gc(clib.MagickWriteImageBlob(self.wand, sizep), ffi.C.free)
-   
+
    -- Return blob and size:
    return blob, tonumber(sizep[0])
 end
@@ -562,7 +562,7 @@ function Image:toTensor(dataType, colorspace, dims, nocopy)
    local ptx = torch.data(tensor)
 
    -- Export:
-   clib.MagickGetImagePixels(self.wand, 
+   clib.MagickGetImagePixels(self.wand,
                              0, 0, width, height,
                              colorspace, clib[pixelType],
                              ffi.cast('unsigned char *',ptx))
@@ -595,7 +595,7 @@ end
 function Image:fromBlob(blob,size)
    -- Read from blob:
    clib.MagickReadImageBlob(self.wand, ffi.cast('const void *', blob), size)
-   
+
    -- Save path:
    self.path = '<blob>'
 
@@ -623,10 +623,10 @@ function Image:fromTensor(tensor, colorspace, dims)
    else -- dims == 'HWD'
       height,width,depth = tensor:size(1),tensor:size(2),tensor:size(3)
    end
-   
+
    -- Force contiguous:
    tensor = tensor:contiguous()
-   
+
    -- Color space:
    if not colorspace then
       if depth == 1 then
@@ -656,7 +656,7 @@ function Image:fromTensor(tensor, colorspace, dims)
    else
       error(Image.name .. ': only dealing with float, double and byte')
    end
-   
+
    -- Raw pointer:
    local ptx = torch.data(tensor)
 
@@ -665,7 +665,7 @@ function Image:fromTensor(tensor, colorspace, dims)
    self:size(width,height)
 
    -- Export:
-   clib.MagickSetImagePixels(self.wand, 
+   clib.MagickSetImagePixels(self.wand,
                              0, 0, width, height,
                              colorspace, clib[pixelType],
                              ffi.cast("unsigned char *", ptx))
@@ -681,7 +681,7 @@ end
 function Image:show(zoom)
    -- Get Tensor from image:
    local tensor = self:toTensor('float', nil,'DHW')
-   
+
    -- Display this tensor:
    require 'image'
    image.display({
