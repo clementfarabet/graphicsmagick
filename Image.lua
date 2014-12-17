@@ -115,7 +115,10 @@ ffi.cdef
   //
   PixelWand *NewPixelWand(void);
   PixelWand *DestroyPixelWand(PixelWand *wand);
-  
+  void PixelSetRed(PixelWand *wand,const double red);
+  void PixelSetGreen(PixelWand *wand,const double green);
+  void PixelSetBlue(PixelWand *wand,const double blue);
+
   // Read/Write:
   MagickBooleanType MagickReadImage(MagickWand*, const char*);
   MagickBooleanType MagickReadImageBlob(MagickWand*, const void*, const size_t);
@@ -167,6 +170,9 @@ ffi.cdef
   // Crop
   unsigned int MagickCropImage( MagickWand *wand, const unsigned long width,
                               const unsigned long height, const long x, const long y );
+
+  unsigned int MagickBorderImage( MagickWand *wand, const PixelWand *bordercolor,
+                                const unsigned long width, const unsigned long height );
 
    // Colorspace:
    ColorspaceType MagickGetImageColorspace( MagickWand *wand );
@@ -455,6 +461,22 @@ end
 -- Crop: (http://www.graphicsmagick.org/wand/magick_wand.html#magickcropimage)
 function Image:crop(w, h, x, y)
    clib.MagickCropImage(self.wand, w, h, x, y)
+
+   -- return self
+   return self
+end
+
+function Image:addBorder(w, h, r, g, b)
+  -- Create PixelWand:
+   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+   end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+   -- Add border:
+   clib.MagickBorderImage(self.wand, pixelwand, w, h)
 
    -- return self
    return self
