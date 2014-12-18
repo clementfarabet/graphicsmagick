@@ -61,6 +61,58 @@ ffi.cdef
     SentinelFilter
   } FilterTypes;
 
+  typedef enum
+  {
+    UndefinedCompositeOp = 0,
+    OverCompositeOp,
+    InCompositeOp,
+    OutCompositeOp,
+    AtopCompositeOp,
+    XorCompositeOp,
+    PlusCompositeOp,
+    MinusCompositeOp,
+    AddCompositeOp,
+    SubtractCompositeOp,
+    DifferenceCompositeOp,
+    MultiplyCompositeOp,
+    BumpmapCompositeOp,
+    CopyCompositeOp,
+    CopyRedCompositeOp,
+    CopyGreenCompositeOp,
+    CopyBlueCompositeOp,
+    CopyOpacityCompositeOp,
+    ClearCompositeOp,
+    DissolveCompositeOp,
+    DisplaceCompositeOp,
+    ModulateCompositeOp,
+    ThresholdCompositeOp,
+    NoCompositeOp,
+    DarkenCompositeOp,
+    LightenCompositeOp,
+    HueCompositeOp,
+    SaturateCompositeOp,
+    ColorizeCompositeOp,
+    LuminizeCompositeOp,
+    ScreenCompositeOp,
+    OverlayCompositeOp,
+    CopyCyanCompositeOp,
+    CopyMagentaCompositeOp,
+    CopyYellowCompositeOp,
+    CopyBlackCompositeOp,
+    DivideCompositeOp,
+    HardLightCompositeOp,
+    ExclusionCompositeOp,
+    ColorDodgeCompositeOp,
+    ColorBurnCompositeOp,
+    SoftLightCompositeOp,
+    LinearBurnCompositeOp,
+    LinearDodgeCompositeOp,
+    LinearLightCompositeOp,
+    VividLightCompositeOp,
+    PinLightCompositeOp,
+    HardMixCompositeOp
+  } CompositeOperator;
+
   // Channels:
   typedef enum
   {
@@ -170,7 +222,6 @@ ffi.cdef
   // Crop
   unsigned int MagickCropImage( MagickWand *wand, const unsigned long width,
                               const unsigned long height, const long x, const long y );
-
   unsigned int MagickBorderImage( MagickWand *wand, const PixelWand *bordercolor,
                                 const unsigned long width, const unsigned long height );
 
@@ -178,6 +229,15 @@ ffi.cdef
   unsigned int MagickColorFloodfillImage( MagickWand *wand, const PixelWand *fill,
                                         const double fuzz, const PixelWand *bordercolor,
                                         const long x, const long y );
+  unsigned int MagickNegateImage( MagickWand *wand, const unsigned int gray );
+  unsigned int MagickSetImageBackgroundColor( MagickWand *wand, const PixelWand *background );
+  MagickWand *MagickFlattenImages( MagickWand *wand );
+  unsigned int MagickBlurImage( MagickWand *wand, const double radius, const double sigma );
+
+  // Composing
+  unsigned int MagickCompositeImage( MagickWand *wand, const MagickWand *composite_wand,
+                                   const CompositeOperator compose, const long x,
+                                   const long y );
 
   // Colorspace:
   ColorspaceType MagickGetImageColorspace( MagickWand *wand );
@@ -492,6 +552,7 @@ function Image:addBorder(w, h, r, g, b)
    return self
 end
 
+-- Flood-fill
 function Image:floodFill(x, y, fuzz, r, g, b)
   -- Create PixelWand:
    local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
@@ -501,11 +562,62 @@ function Image:floodFill(x, y, fuzz, r, g, b)
    clib.PixelSetRed(pixelwand, r or 0)
    clib.PixelSetGreen(pixelwand, g or 0)
    clib.PixelSetBlue(pixelwand, b or 0)
-   -- Fo flood-fill
+   -- Do flood-fill
    clib.MagickColorFloodfillImage(self.wand, pixelwand, fuzz, nil, x, y)
 
    -- return self
    return self
+end
+
+-- Inverse image
+function Image:negate()
+  clib.MagickNegateImage(self.wand, 0)
+  return self
+end
+
+-- Change image background coloe
+function Image:setBackground(r, g, b)
+  -- Create PixelWand:
+  local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+  end)
+  clib.PixelSetRed(pixelwand, r or 0)
+  clib.PixelSetGreen(pixelwand, g or 0)
+  clib.PixelSetBlue(pixelwand, b or 0)
+  clib.MagickSetImageBackgroundColor(self.wand, pixelwand)
+
+   -- return self
+  return self
+end
+
+-- Compositing operation
+function Image:compose(composite, op, x, y)
+  -- get CompositeOperator
+  local compose = clib[op .. 'CompositeOp']
+  clib.MagickCompositeImage(self.wand, composite.wand, compose, x, y)
+  return self
+end
+
+-- Flatten image layers: result is returned
+function Image:flatten()
+  -- Create new instance:
+  local image = {}
+  for k,v in pairs(Image) do
+      image[k] = v
+  end
+
+  image.wand = ffi.gc(clib.MagickFlattenImages(self.wand), function(wand)
+    -- Collect:
+    clib.DestroyMagickWand(wand)
+  end)
+  return image
+end
+
+-- Blur image
+function Image:blur(radius, sigma)
+  clib.MagickBlurImage(self.wand, radius, sigma)
+  return self
 end
 
 -- Export to Blob:
