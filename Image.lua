@@ -246,7 +246,12 @@ function Image:clone()
    for k,v in pairs(out.buffers) do
       v = nil
    end
-   out.wand = clib.CloneMagickWand(self.wand)
+
+   out.wand = ffi.gc(clib.CloneMagickWand(self.wand), function(wand)
+      -- Collect:
+      clib.DestroyMagickWand(wand)
+   end)
+
    return out
 end
 
