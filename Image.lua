@@ -571,7 +571,7 @@ function Image:addBorder(w, h, r, g, b)
 end
 
 -- Flood-fill
-function Image:floodFill(x, y, fuzz, r, g, b)
+function Image:floodFill(x, y, r, g, b, fuzz)
   -- Create PixelWand:
    local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
       -- Collect:
@@ -580,6 +580,8 @@ function Image:floodFill(x, y, fuzz, r, g, b)
    clib.PixelSetRed(pixelwand, r or 0)
    clib.PixelSetGreen(pixelwand, g or 0)
    clib.PixelSetBlue(pixelwand, b or 0)
+   local fuzz = fuzz or 0
+
    -- Do flood-fill
    clib.MagickColorFloodfillImage(self.wand, pixelwand, fuzz, nil, x, y)
 
