@@ -515,12 +515,16 @@ function Image:flop()
 end
 
 -- Rotate:
-function Image:rotate(deg)
+function Image:rotate(deg, r, g, b)
    -- Create PixelWand:
    local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
       -- Collect:
       clib.DestroyPixelWand(pixelwand)
    end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+
    -- Rotate image:
    clib.MagickRotateImage(self.wand, pixelwand, deg)
 
