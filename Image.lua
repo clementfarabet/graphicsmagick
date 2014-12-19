@@ -24,6 +24,19 @@ ffi.cdef
     DoublePixel,
   } StorageType;
 
+  // Noise types:
+  typedef enum
+  {
+    UniformNoise,
+    GaussianNoise,
+    MultiplicativeGaussianNoise,
+    ImpulseNoise,
+    LaplacianNoise,
+    PoissonNoise,
+    RandomNoise,
+    UndefinedNoise
+  } NoiseType;
+
   // Resizing filters:
   typedef enum
   {
@@ -233,6 +246,7 @@ ffi.cdef
   unsigned int MagickSetImageBackgroundColor( MagickWand *wand, const PixelWand *background );
   MagickWand *MagickFlattenImages( MagickWand *wand );
   unsigned int MagickBlurImage( MagickWand *wand, const double radius, const double sigma );
+  unsigned int MagickAddNoiseImage( MagickWand *wand, const NoiseType noise_type );
 
   // Composing
   unsigned int MagickCompositeImage( MagickWand *wand, const MagickWand *composite_wand,
@@ -621,6 +635,14 @@ end
 -- Blur image
 function Image:blur(radius, sigma)
   clib.MagickBlurImage(self.wand, radius, sigma)
+  return self
+end
+
+-- Add noise
+function Image:addNoise(noise)
+  -- get noise type
+  local noisetype = clib[noise .. 'Noise']
+  clib.MagickAddNoiseImage(self.wand, noisetype)
   return self
 end
 
