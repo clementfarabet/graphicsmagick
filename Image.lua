@@ -247,6 +247,8 @@ ffi.cdef
   MagickWand *MagickFlattenImages( MagickWand *wand );
   unsigned int MagickBlurImage( MagickWand *wand, const double radius, const double sigma );
   unsigned int MagickAddNoiseImage( MagickWand *wand, const NoiseType noise_type );
+  unsigned int MagickColorizeImage( MagickWand *wand, const PixelWand *colorize,
+                                  const PixelWand *opacity );
 
   // Composing
   unsigned int MagickCompositeImage( MagickWand *wand, const MagickWand *composite_wand,
@@ -645,6 +647,21 @@ function Image:addNoise(noise)
   -- get noise type
   local noisetype = clib[noise .. 'Noise']
   clib.MagickAddNoiseImage(self.wand, noisetype)
+  return self
+end
+
+-- Colorize image
+function Image:colorize(r, g, b)
+  -- Create PixelWand:
+  local colorize = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+  end)
+  clib.PixelSetRed(colorize, r or 0)
+  clib.PixelSetGreen(colorize, g or 0)
+  clib.PixelSetBlue(colorize, b or 0)
+
+  clib.MagickColorizeImage(self.wand, colorize, opacity)
   return self
 end
 
