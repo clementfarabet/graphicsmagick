@@ -704,6 +704,7 @@ end
 
 -- To Tensor:
 function Image:toTensor(dataType, colorspace, dims, nocopy)
+   require "torch"
    -- Dims:
    local width,height = self:size()
 
@@ -798,6 +799,7 @@ end
 
 -- From Tensor:
 function Image:fromTensor(tensor, colorspace, dims)
+   require 'torch'
    -- Dims:
    local height,width,depth
    if dims == 'DHW' then
