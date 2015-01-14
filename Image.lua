@@ -24,6 +24,19 @@ ffi.cdef
     DoublePixel,
   } StorageType;
 
+  // Noise types:
+  typedef enum
+  {
+    UniformNoise,
+    GaussianNoise,
+    MultiplicativeGaussianNoise,
+    ImpulseNoise,
+    LaplacianNoise,
+    PoissonNoise,
+    RandomNoise,
+    UndefinedNoise
+  } NoiseType;
+
   // Resizing filters:
   typedef enum
   {
@@ -60,6 +73,58 @@ ffi.cdef
     LanczosRadiusFilter,
     SentinelFilter
   } FilterTypes;
+
+  typedef enum
+  {
+    UndefinedCompositeOp = 0,
+    OverCompositeOp,
+    InCompositeOp,
+    OutCompositeOp,
+    AtopCompositeOp,
+    XorCompositeOp,
+    PlusCompositeOp,
+    MinusCompositeOp,
+    AddCompositeOp,
+    SubtractCompositeOp,
+    DifferenceCompositeOp,
+    MultiplyCompositeOp,
+    BumpmapCompositeOp,
+    CopyCompositeOp,
+    CopyRedCompositeOp,
+    CopyGreenCompositeOp,
+    CopyBlueCompositeOp,
+    CopyOpacityCompositeOp,
+    ClearCompositeOp,
+    DissolveCompositeOp,
+    DisplaceCompositeOp,
+    ModulateCompositeOp,
+    ThresholdCompositeOp,
+    NoCompositeOp,
+    DarkenCompositeOp,
+    LightenCompositeOp,
+    HueCompositeOp,
+    SaturateCompositeOp,
+    ColorizeCompositeOp,
+    LuminizeCompositeOp,
+    ScreenCompositeOp,
+    OverlayCompositeOp,
+    CopyCyanCompositeOp,
+    CopyMagentaCompositeOp,
+    CopyYellowCompositeOp,
+    CopyBlackCompositeOp,
+    DivideCompositeOp,
+    HardLightCompositeOp,
+    ExclusionCompositeOp,
+    ColorDodgeCompositeOp,
+    ColorBurnCompositeOp,
+    SoftLightCompositeOp,
+    LinearBurnCompositeOp,
+    LinearDodgeCompositeOp,
+    LinearLightCompositeOp,
+    VividLightCompositeOp,
+    PinLightCompositeOp,
+    HardMixCompositeOp
+  } CompositeOperator;
 
   // Channels:
   typedef enum
@@ -106,7 +171,7 @@ ffi.cdef
   // Global context:
   void MagickWandGenesis();
   void InitializeMagick();
-  
+
   // Magick Wand:
   MagickWand* NewMagickWand();
   MagickWand* DestroyMagickWand(MagickWand*);
@@ -115,7 +180,10 @@ ffi.cdef
   //
   PixelWand *NewPixelWand(void);
   PixelWand *DestroyPixelWand(PixelWand *wand);
-  
+  void PixelSetRed(PixelWand *wand,const double red);
+  void PixelSetGreen(PixelWand *wand,const double green);
+  void PixelSetBlue(PixelWand *wand,const double blue);
+
   // Read/Write:
   MagickBooleanType MagickReadImage(MagickWand*, const char*);
   MagickBooleanType MagickReadImageBlob(MagickWand*, const void*, const size_t);
@@ -124,7 +192,7 @@ ffi.cdef
 
   // Quality:
   unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
- 
+
   //Exception handling:
   const char* MagickGetException(const MagickWand*, ExceptionType*);
 
@@ -156,9 +224,9 @@ ffi.cdef
                                      const char *map, const StorageType storage,
                                      unsigned char *pixels );
 
-   // Flip/Flop
-   unsigned int MagickFlipImage( MagickWand *wand );
-   unsigned int MagickFlopImage( MagickWand *wand );
+  // Flip/Flop
+  unsigned int MagickFlipImage( MagickWand *wand );
+  unsigned int MagickFlopImage( MagickWand *wand );
 
   // Rotate
   unsigned int MagickRotateImage( MagickWand *wand, const PixelWand *background,
@@ -167,13 +235,32 @@ ffi.cdef
   // Crop
   unsigned int MagickCropImage( MagickWand *wand, const unsigned long width,
                               const unsigned long height, const long x, const long y );
+  unsigned int MagickBorderImage( MagickWand *wand, const PixelWand *bordercolor,
+                                const unsigned long width, const unsigned long height );
 
-   // Colorspace:
-   ColorspaceType MagickGetImageColorspace( MagickWand *wand );
-   unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
+  // Processing
+  unsigned int MagickColorFloodfillImage( MagickWand *wand, const PixelWand *fill,
+                                        const double fuzz, const PixelWand *bordercolor,
+                                        const long x, const long y );
+  unsigned int MagickNegateImage( MagickWand *wand, const unsigned int gray );
+  unsigned int MagickSetImageBackgroundColor( MagickWand *wand, const PixelWand *background );
+  MagickWand *MagickFlattenImages( MagickWand *wand );
+  unsigned int MagickBlurImage( MagickWand *wand, const double radius, const double sigma );
+  unsigned int MagickAddNoiseImage( MagickWand *wand, const NoiseType noise_type );
+  unsigned int MagickColorizeImage( MagickWand *wand, const PixelWand *colorize,
+                                  const PixelWand *opacity );
 
-   // Description
-   const char *MagickDescribeImage( MagickWand *wand );
+  // Composing
+  unsigned int MagickCompositeImage( MagickWand *wand, const MagickWand *composite_wand,
+                                   const CompositeOperator compose, const long x,
+                                   const long y );
+
+  // Colorspace:
+  ColorspaceType MagickGetImageColorspace( MagickWand *wand );
+  unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
+
+  // Description
+  const char *MagickDescribeImage( MagickWand *wand );
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -211,31 +298,36 @@ function Image.new(pathOrTensor, ...)
       -- Collect:
       clib.DestroyMagickWand(wand)
    end)
-  
+
    -- Arg?
    if type(pathOrTensor) == 'string' then
       -- Is a path:
       image:load(pathOrTensor, ...)
-   
+
    elseif type(pathOrTensor) == 'userdata' then
       -- Is a tensor:
       image:fromTensor(pathOrTensor, ...)
 
    end
-   
-   -- 
+
+   --
    return image
 end
 
 function Image:clone()
    local out = Image()
-   for k,v in pairs(Image) do      
+   for k,v in pairs(Image) do
       out[k] = self[k]
    end
    for k,v in pairs(out.buffers) do
       v = nil
    end
-   out.wand = clib.CloneMagickWand(self.wand)
+
+   out.wand = ffi.gc(clib.CloneMagickWand(self.wand), function(wand)
+      -- Collect:
+      clib.DestroyMagickWand(wand)
+   end)
+
    return out
 end
 
@@ -251,7 +343,7 @@ function Image:load(path, width, height)
 
    -- Load image:
    local status = clib.MagickReadImage(self.wand, path)
-   
+
    -- Error?
    if status == 0 then
       clib.DestroyMagickWand(self.wand)
@@ -274,11 +366,11 @@ function Image:save(path, quality)
 
    -- Set quality:
    quality = quality or 85
-   clib.MagickSetCompressionQuality(self.wand, quality) 
+   clib.MagickSetCompressionQuality(self.wand, quality)
 
    -- Save:
    local status = clib.MagickWriteImage(self.wand, path)
-   
+
    -- Error?
    if status == 0 then
       error(self.name .. ': error saving image to path "' .. path .. '"')
@@ -308,7 +400,7 @@ function Image:size(width,height,filter)
             width = box * cwidth/cheight
          end
       end
-      
+
       -- Min box?
       if not width then
          -- in this case, the image must cover a heightxheight box:
@@ -355,7 +447,7 @@ function Image:depth(depth)
       local depth = clib.MagickGetImageDepth(self.wand)
    end
    --
-   return depth 
+   return depth
 end
 
 -- Format:
@@ -417,7 +509,7 @@ function Image:colorspace(colorspace)
 
       colorspace = colorspaces[colorspace]
    end
-   return colorspace 
+   return colorspace
 end
 
 -- Flip:
@@ -439,12 +531,16 @@ function Image:flop()
 end
 
 -- Rotate:
-function Image:rotate(deg)
+function Image:rotate(deg, r, g, b)
    -- Create PixelWand:
    local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
       -- Collect:
       clib.DestroyPixelWand(pixelwand)
    end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+
    -- Rotate image:
    clib.MagickRotateImage(self.wand, pixelwand, deg)
 
@@ -460,6 +556,115 @@ function Image:crop(w, h, x, y)
    return self
 end
 
+function Image:addBorder(w, h, r, g, b)
+  -- Create PixelWand:
+   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+   end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+   -- Add border:
+   clib.MagickBorderImage(self.wand, pixelwand, w, h)
+
+   -- return self
+   return self
+end
+
+-- Flood-fill
+function Image:floodFill(x, y, r, g, b, fuzz)
+  -- Create PixelWand:
+   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+   end)
+   clib.PixelSetRed(pixelwand, r or 0)
+   clib.PixelSetGreen(pixelwand, g or 0)
+   clib.PixelSetBlue(pixelwand, b or 0)
+   local fuzz = fuzz or 0
+
+   -- Do flood-fill
+   clib.MagickColorFloodfillImage(self.wand, pixelwand, fuzz, nil, x, y)
+
+   -- return self
+   return self
+end
+
+-- Inverse image
+function Image:negate()
+  clib.MagickNegateImage(self.wand, 0)
+  return self
+end
+
+-- Change image background coloe
+function Image:setBackground(r, g, b)
+  -- Create PixelWand:
+  local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+  end)
+  clib.PixelSetRed(pixelwand, r or 0)
+  clib.PixelSetGreen(pixelwand, g or 0)
+  clib.PixelSetBlue(pixelwand, b or 0)
+  clib.MagickSetImageBackgroundColor(self.wand, pixelwand)
+
+   -- return self
+  return self
+end
+
+-- Compositing operation
+function Image:compose(composite, op, x, y)
+  -- get CompositeOperator
+  local compose = clib[op .. 'CompositeOp']
+  clib.MagickCompositeImage(self.wand, composite.wand, compose, x, y)
+  return self
+end
+
+-- Flatten image layers: result is returned
+function Image:flatten()
+  -- Create new instance:
+  local image = {}
+  for k,v in pairs(Image) do
+      image[k] = v
+  end
+
+  image.wand = ffi.gc(clib.MagickFlattenImages(self.wand), function(wand)
+    -- Collect:
+    clib.DestroyMagickWand(wand)
+  end)
+  return image
+end
+
+-- Blur image
+function Image:blur(radius, sigma)
+  clib.MagickBlurImage(self.wand, radius, sigma)
+  return self
+end
+
+-- Add noise
+function Image:addNoise(noise)
+  -- get noise type
+  local noisetype = clib[noise .. 'Noise']
+  clib.MagickAddNoiseImage(self.wand, noisetype)
+  return self
+end
+
+-- Colorize image
+function Image:colorize(r, g, b)
+  -- Create PixelWand:
+  local colorize = ffi.gc(clib.NewPixelWand(), function(pixelwand)
+      -- Collect:
+      clib.DestroyPixelWand(pixelwand)
+  end)
+  clib.PixelSetRed(colorize, r or 0)
+  clib.PixelSetGreen(colorize, g or 0)
+  clib.PixelSetBlue(colorize, b or 0)
+
+  clib.MagickColorizeImage(self.wand, colorize, opacity)
+  return self
+end
+
 -- Export to Blob:
 function Image:toBlob(quality)
    -- Size pointer:
@@ -472,15 +677,15 @@ function Image:toBlob(quality)
       print('please call image:format(fmt) before (format = JPEG, PNG, ...')
       error()
    end
-   
+
    -- Set quality:
    if quality then
-      clib.MagickSetCompressionQuality(self.wand, quality) 
+      clib.MagickSetCompressionQuality(self.wand, quality)
    end
 
    -- To Blob:
    local blob = ffi.gc(clib.MagickWriteImageBlob(self.wand, sizep), ffi.C.free)
-   
+
    -- Return blob and size:
    return blob, tonumber(sizep[0])
 end
@@ -499,6 +704,7 @@ end
 
 -- To Tensor:
 function Image:toTensor(dataType, colorspace, dims, nocopy)
+   require "torch"
    -- Dims:
    local width,height = self:size()
 
@@ -540,7 +746,7 @@ function Image:toTensor(dataType, colorspace, dims, nocopy)
    local ptx = torch.data(tensor)
 
    -- Export:
-   clib.MagickGetImagePixels(self.wand, 
+   clib.MagickGetImagePixels(self.wand,
                              0, 0, width, height,
                              colorspace, clib[pixelType],
                              ffi.cast('unsigned char *',ptx))
@@ -573,7 +779,7 @@ end
 function Image:fromBlob(blob,size)
    -- Read from blob:
    clib.MagickReadImageBlob(self.wand, ffi.cast('const void *', blob), size)
-   
+
    -- Save path:
    self.path = '<blob>'
 
@@ -593,6 +799,7 @@ end
 
 -- From Tensor:
 function Image:fromTensor(tensor, colorspace, dims)
+   require 'torch'
    -- Dims:
    local height,width,depth
    if dims == 'DHW' then
@@ -601,10 +808,10 @@ function Image:fromTensor(tensor, colorspace, dims)
    else -- dims == 'HWD'
       height,width,depth = tensor:size(1),tensor:size(2),tensor:size(3)
    end
-   
+
    -- Force contiguous:
    tensor = tensor:contiguous()
-   
+
    -- Color space:
    if not colorspace then
       if depth == 1 then
@@ -634,7 +841,7 @@ function Image:fromTensor(tensor, colorspace, dims)
    else
       error(Image.name .. ': only dealing with float, double and byte')
    end
-   
+
    -- Raw pointer:
    local ptx = torch.data(tensor)
 
@@ -643,7 +850,7 @@ function Image:fromTensor(tensor, colorspace, dims)
    self:size(width,height)
 
    -- Export:
-   clib.MagickSetImagePixels(self.wand, 
+   clib.MagickSetImagePixels(self.wand,
                              0, 0, width, height,
                              colorspace, clib[pixelType],
                              ffi.cast("unsigned char *", ptx))
@@ -659,7 +866,7 @@ end
 function Image:show(zoom)
    -- Get Tensor from image:
    local tensor = self:toTensor('float', nil,'DHW')
-   
+
    -- Display this tensor:
    require 'image'
    image.display({
