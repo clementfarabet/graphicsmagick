@@ -346,8 +346,12 @@ function Image:load(path, width, height)
 
    -- Error?
    if status == 0 then
-      clib.DestroyMagickWand(self.wand)
-      error(self.name .. ': error loading image at path "' .. path .. '"')
+      local etype = ffi.new('int[1]')
+      local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+      error(string.format(
+        '%s: error loading image: %s (ExceptionType=%d)',
+        self.name, descr, etype[0]
+      ))
    end
 
    -- Save path:
@@ -373,7 +377,12 @@ function Image:save(path, quality)
 
    -- Error?
    if status == 0 then
-      error(self.name .. ': error saving image to path "' .. path .. '"')
+      local etype = ffi.new('int[1]')
+      local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+      error(string.format(
+        '%s: error saving image: %s (ExceptionType=%d)',
+        self.name, descr, etype[0]
+      ))
    end
 
    -- return self
@@ -420,7 +429,12 @@ function Image:size(width,height,filter)
 
       -- Error?
       if status == 0 then
-         error(self.name .. ': error resizing image')
+         local etype = ffi.new('int[1]')
+         local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+         error(string.format(
+          '%s: error resizing image: %s (ExceptionType=%d)',
+          self.name, descr, etype[0]
+         ))
       end
 
       -- return self
