@@ -4,6 +4,7 @@ ffi.cdef
 [[
   // free
   void free(void *);
+  unsigned int MagickRelinquishMemory( void *resource );
 
   // Magick types:
   typedef void MagickWand;
@@ -194,7 +195,7 @@ ffi.cdef
   unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
 
   //Exception handling:
-  const char* MagickGetException(const MagickWand*, ExceptionType*);
+  char* MagickGetException(const MagickWand*, ExceptionType*);
 
   // Dimensions:
   int MagickGetImageWidth(MagickWand*);
@@ -347,10 +348,13 @@ function Image:load(path, width, height)
    -- Error?
    if status == 0 then
       local etype = ffi.new('int[1]')
-      local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+      local descr = ffi.gc(
+        clib.MagickGetException(self.wand, etype),
+        clib.MagickRelinquishMemory
+      )
       error(string.format(
         '%s: error loading image: %s (ExceptionType=%d)',
-        self.name, descr, etype[0]
+        self.name, ffi.string(descr), etype[0]
       ))
    end
 
@@ -378,10 +382,13 @@ function Image:save(path, quality)
    -- Error?
    if status == 0 then
       local etype = ffi.new('int[1]')
-      local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+      local descr = ffi.gc(
+        clib.MagickGetException(self.wand, etype),
+        clib.MagickRelinquishMemory
+      )
       error(string.format(
         '%s: error saving image: %s (ExceptionType=%d)',
-        self.name, descr, etype[0]
+        self.name, ffi.string(descr), etype[0]
       ))
    end
 
@@ -430,10 +437,13 @@ function Image:size(width,height,filter)
       -- Error?
       if status == 0 then
          local etype = ffi.new('int[1]')
-         local descr = ffi.string(clib.MagickGetException(self.wand, etype))
+         local descr = ffi.gc(
+           clib.MagickGetException(self.wand, etype),
+           clib.MagickRelinquishMemory
+         )
          error(string.format(
-          '%s: error resizing image: %s (ExceptionType=%d)',
-          self.name, descr, etype[0]
+           '%s: error resizing image: %s (ExceptionType=%d)',
+           self.name, ffi.string(descr), etype[0]
          ))
       end
 
