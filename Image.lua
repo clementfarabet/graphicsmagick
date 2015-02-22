@@ -4,6 +4,7 @@ ffi.cdef
 [[
   // free
   void free(void *);
+  unsigned int MagickRelinquishMemory( void *resource );
 
   // Magick types:
   typedef void MagickWand;
@@ -194,7 +195,7 @@ ffi.cdef
   unsigned int MagickSetCompressionQuality( MagickWand *wand, const unsigned long quality );
 
   //Exception handling:
-  const char* MagickGetException(const MagickWand*, ExceptionType*);
+  char* MagickGetException(const MagickWand*, ExceptionType*);
 
   // Dimensions:
   int MagickGetImageWidth(MagickWand*);
@@ -346,8 +347,15 @@ function Image:load(path, width, height)
 
    -- Error?
    if status == 0 then
-      clib.DestroyMagickWand(self.wand)
-      error(self.name .. ': error loading image at path "' .. path .. '"')
+      local etype = ffi.new('int[1]')
+      local descr = ffi.gc(
+        clib.MagickGetException(self.wand, etype),
+        clib.MagickRelinquishMemory
+      )
+      error(string.format(
+        '%s: error loading image: %s (ExceptionType=%d)',
+        self.name, ffi.string(descr), etype[0]
+      ))
    end
 
    -- Save path:
@@ -373,7 +381,15 @@ function Image:save(path, quality)
 
    -- Error?
    if status == 0 then
-      error(self.name .. ': error saving image to path "' .. path .. '"')
+      local etype = ffi.new('int[1]')
+      local descr = ffi.gc(
+        clib.MagickGetException(self.wand, etype),
+        clib.MagickRelinquishMemory
+      )
+      error(string.format(
+        '%s: error saving image: %s (ExceptionType=%d)',
+        self.name, ffi.string(descr), etype[0]
+      ))
    end
 
    -- return self
@@ -420,7 +436,15 @@ function Image:size(width,height,filter)
 
       -- Error?
       if status == 0 then
-         error(self.name .. ': error resizing image')
+         local etype = ffi.new('int[1]')
+         local descr = ffi.gc(
+           clib.MagickGetException(self.wand, etype),
+           clib.MagickRelinquishMemory
+         )
+         error(string.format(
+           '%s: error resizing image: %s (ExceptionType=%d)',
+           self.name, ffi.string(descr), etype[0]
+         ))
       end
 
       -- return self
