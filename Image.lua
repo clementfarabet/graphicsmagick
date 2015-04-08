@@ -401,7 +401,7 @@ function Image:size(width,height,filter)
    -- Set or get:
    if width or height then
       -- Get filter:
-      local filter = clib[(filter or 'Cubic') .. 'Filter']
+      local filter = clib[(filter or 'Undefined') .. 'Filter']
 
       -- Bounding box?
       if not height then
