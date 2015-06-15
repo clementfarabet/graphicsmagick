@@ -262,6 +262,10 @@ ffi.cdef
 
   // Description
   const char *MagickDescribeImage( MagickWand *wand );
+
+  // SamplingFactors
+  double *MagickGetSamplingFactors(MagickWand *,unsigned long *);
+  unsigned int MagickSetSamplingFactors(MagickWand *,const unsigned long,const double *);
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -687,6 +691,37 @@ function Image:colorize(r, g, b)
 
   clib.MagickColorizeImage(self.wand, colorize, opacity)
   return self
+end
+
+-- Sampling Factors (jpeg:sampling-factor)
+function Image:samplingFactors(sampling_factors)
+   if sampling_factors then
+      -- Set sampling factors
+      local valp = ffi.new("double[?]", #sampling_factors, sampling_factors)
+      local status = clib.MagickSetSamplingFactors(self.wand, #sampling_factors, valp)
+      if status == 0 then
+	 local etype = ffi.new('int[1]')
+	 local descr = ffi.gc(
+	    clib.MagickGetException(self.wand, etype),
+	    clib.MagickRelinquishMemory
+	 )
+	 error(string.format(
+		  '%s: error set sampling factors: %s (ExceptionType=%d)',
+		  self.name, ffi.string(descr), etype[0]))
+      end
+      return self
+   else
+      -- Get sampling factors
+      local sizep = ffi.new('unsigned long[1]', 0)
+      local valp = ffi.gc(clib.MagickGetSamplingFactors(self.wand, sizep),
+			  clib.MagickRelinquishMemory)
+      local n = tonumber(sizep[0])
+      local sampling_factors = {}
+      for i = 0, n - 1 do
+	 table.insert(sampling_factors, tonumber(valp[i]))
+      end
+      return sampling_factors
+   end
 end
 
 -- Export to Blob:
