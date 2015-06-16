@@ -169,6 +169,22 @@ ffi.cdef
     Rec709YCbCrColorspace  /* YCbCr according to ITU-R 709 */
   } ColorspaceType;
 
+  // Image Type
+  typedef enum
+  {
+    UndefinedType,
+    BilevelType,
+    GrayscaleType,
+    GrayscaleMatteType,
+    PaletteType,
+    PaletteMatteType,
+    TrueColorType,
+    TrueColorMatteType,
+    ColorSeparationType,
+    ColorSeparationMatteType,
+    OptimizeType
+  } ImageType;
+
   // Global context:
   void MagickWandGenesis();
   void InitializeMagick();
@@ -266,6 +282,9 @@ ffi.cdef
   // SamplingFactors
   double *MagickGetSamplingFactors(MagickWand *,unsigned long *);
   unsigned int MagickSetSamplingFactors(MagickWand *,const unsigned long,const double *);
+
+  // ImageType
+  unsigned int MagickSetImageType( MagickWand *, const ImageType );
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -907,7 +926,9 @@ function Image:fromTensor(tensor, colorspace, dims)
    -- Resize image:
    self:load('xc:black')
    self:size(width,height)
-
+   if colorspace == "RGBA" then
+      clib.MagickSetImageType(self.wand, clib.TrueColorMatteType)
+   end
    -- Export:
    clib.MagickSetImagePixels(self.wand,
                              0, 0, width, height,
