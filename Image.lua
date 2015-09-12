@@ -13,6 +13,7 @@ ffi.cdef
   typedef int size_t;
   typedef int ChannelType;
   typedef void PixelWand;
+  typedef void DrawingWand;
 
   // Pixel formats:
   typedef enum
@@ -285,6 +286,21 @@ ffi.cdef
 
   // ImageType
   unsigned int MagickSetImageType( MagickWand *, const ImageType );
+
+  DrawingWand *MagickNewDrawingWand( void );
+  void MagickDestroyDrawingWand( DrawingWand *drawing_wand );
+  typedef struct _AffineMatrix
+  {
+    double
+      sx,
+      rx,
+      ry,
+      sy,
+      tx,
+      ty;
+  } AffineMatrix;
+  void MagickDrawAffine( DrawingWand *drawing_wand, const AffineMatrix *affine );
+  unsigned int MagickAffineTransformImage( MagickWand *wand, const DrawingWand *drawing_wand );
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -709,6 +725,25 @@ function Image:colorize(r, g, b)
   clib.PixelSetBlue(colorize, b or 0)
 
   clib.MagickColorizeImage(self.wand, colorize, opacity)
+  return self
+end
+
+function Image:affineTransform(sx, rx, ry, sy, tx, ty)
+  local drawingWand = ffi.gc(clib.MagickNewDrawingWand(), function(drawingWand)
+      clib.MagickDestroyDrawingWand(drawingWand)
+  end)
+
+  local affineMatrix = ffi.new("AffineMatrix")
+  affineMatrix.sx = sx
+  affineMatrix.rx = rx
+  affineMatrix.ry = ry
+  affineMatrix.sy = sy
+  affineMatrix.tx = tx
+  affineMatrix.ty = ty
+
+  clib.MagickDrawAffine(drawingWand, affineMatrix)
+
+  clib.MagickAffineTransformImage(self.wand, drawingWand)
   return self
 end
 
