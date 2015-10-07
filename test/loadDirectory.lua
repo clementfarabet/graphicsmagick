@@ -1,11 +1,12 @@
 
--- 
+--
 -- this script demonstrates how to load a list of images from
 -- a directoty, by using GraphicsMagick's ability to load
 -- the smallest size required
 --
 
 gm = require 'graphicsmagick'
+require 'torch'
 require 'pl'
 
 opt = {
@@ -23,8 +24,13 @@ images = {}
 t = torch.Timer()
 for _,file in ipairs(files) do
    if file:lower():find('jpg$') or file:lower():find('jpeg$') then
-      local img = gm.Image(file):size(opt.maxsize):toTensor('byte', 'RGB', 'DHW')
-      table.insert(images, img)
+      local ok, img = pcall(gm.Image, file)
+      if ok then
+         img = img:size(opt.maxsize):toTensor('byte', 'RGB', 'DHW')
+         table.insert(images, img)
+      else
+         print('WARNING: skipping ' .. file .. '(' .. img .. ')')
+      end
    end
 end
 passed = t:time().real
@@ -39,8 +45,13 @@ images = {}
 t = torch.Timer()
 for _,file in ipairs(files) do
    if file:lower():find('jpg$') or file:lower():find('jpeg$') then
-      local img = gm.Image(file, opt.maxsize):size(opt.maxsize):toTensor('byte', 'RGB', 'DHW')
-      table.insert(images, img)
+      local ok, img = pcall(gm.Image, file, opt.maxsize)
+      if ok then
+         img = img:size(opt.maxsize):toTensor('byte', 'RGB', 'DHW')
+         table.insert(images, img)
+      else
+         print('WARNING: skipping ' .. file .. '(' .. img .. ')')
+      end
    end
 end
 passed = t:time().real

@@ -325,6 +325,20 @@ setmetatable(Image, {
    end
 })
 
+-- Wrapper around `MagickGetException` to report errors:
+local function magick_error(self, ctx)
+   ctx = ctx or 'error'
+   local etype = ffi.new('int[1]')
+   local descr = ffi.gc(
+      clib.MagickGetException(self.wand, etype),
+      clib.MagickRelinquishMemory
+   )
+   error(string.format(
+      '%s: %s: %s (ExceptionType=%d)',
+      self.name, ctx, ffi.string(descr), etype[0]
+   ))
+end
+
 -- Constructor:
 function Image.new(pathOrTensor, ...)
    -- Create new instance:
@@ -386,15 +400,7 @@ function Image:load(path, width, height)
 
    -- Error?
    if status == 0 then
-      local etype = ffi.new('int[1]')
-      local descr = ffi.gc(
-        clib.MagickGetException(self.wand, etype),
-        clib.MagickRelinquishMemory
-      )
-      error(string.format(
-        '%s: error loading image: %s (ExceptionType=%d)',
-        self.name, ffi.string(descr), etype[0]
-      ))
+      magick_error(self, 'error loading image')
    end
 
    -- Save path:
@@ -420,15 +426,7 @@ function Image:save(path, quality)
 
    -- Error?
    if status == 0 then
-      local etype = ffi.new('int[1]')
-      local descr = ffi.gc(
-        clib.MagickGetException(self.wand, etype),
-        clib.MagickRelinquishMemory
-      )
-      error(string.format(
-        '%s: error saving image: %s (ExceptionType=%d)',
-        self.name, ffi.string(descr), etype[0]
-      ))
+      magick_error(self, 'error saving image')
    end
 
    -- return self
@@ -475,15 +473,7 @@ function Image:size(width,height,filter)
 
       -- Error?
       if status == 0 then
-         local etype = ffi.new('int[1]')
-         local descr = ffi.gc(
-           clib.MagickGetException(self.wand, etype),
-           clib.MagickRelinquishMemory
-         )
-         error(string.format(
-           '%s: error resizing image: %s (ExceptionType=%d)',
-           self.name, ffi.string(descr), etype[0]
-         ))
+         magick_error(self, 'error resizing image')
       end
 
       -- return self
@@ -754,14 +744,7 @@ function Image:samplingFactors(sampling_factors)
       local valp = ffi.new("double[?]", #sampling_factors, sampling_factors)
       local status = clib.MagickSetSamplingFactors(self.wand, #sampling_factors, valp)
       if status == 0 then
-	 local etype = ffi.new('int[1]')
-	 local descr = ffi.gc(
-	    clib.MagickGetException(self.wand, etype),
-	    clib.MagickRelinquishMemory
-	 )
-	 error(string.format(
-		  '%s: error set sampling factors: %s (ExceptionType=%d)',
-		  self.name, ffi.string(descr), etype[0]))
+         magick_error(self, 'error set sampling factors')
       end
       return self
    else
@@ -891,7 +874,13 @@ end
 -- Import from blob:
 function Image:fromBlob(blob,size)
    -- Read from blob:
-   clib.MagickReadImageBlob(self.wand, ffi.cast('const void *', blob), size)
+   local status = clib.MagickReadImageBlob(
+    self.wand, ffi.cast('const void *', blob), size
+   )
+
+   if status == 0 then
+      magick_error(self, 'error reading from blob')
+   end
 
    -- Save path:
    self.path = '<blob>'
