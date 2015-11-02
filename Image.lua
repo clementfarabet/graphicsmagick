@@ -301,6 +301,13 @@ ffi.cdef
   } AffineMatrix;
   void MagickDrawAffine( DrawingWand *drawing_wand, const AffineMatrix *affine );
   unsigned int MagickAffineTransformImage( MagickWand *wand, const DrawingWand *drawing_wand );
+
+  double MagickGetImageGamma(MagickWand *wand);
+  unsigned int MagickSetImageGamma(MagickWand *wand, const double gamma);
+  unsigned int MagickGammaImage(MagickWand *wand, const double gamma);
+  unsigned int MagickGammaImageChannel(MagickWand *wand,
+                                       const ChannelType channel_type,
+                                       const double gamma);
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -759,6 +766,37 @@ function Image:samplingFactors(sampling_factors)
       end
       return sampling_factors
    end
+end
+
+-- Gamma Property
+function Image:gamma(gamma)
+   if gamma then
+      local status = clib.MagickSetImageGamma(self.wand, gamma)
+      if status == 0 then
+         magick_error(self, 'error set gamma')
+      end
+      return self
+   else
+      return clib.MagickGetImageGamma(self.wand)
+   end
+end
+-- Gamma Correction
+function Image:gammaCorrection(gamma, channel_type)
+   local status = 0
+   if channel_type then
+      if channel_type == "All" then
+	 channel_type = clib[channel_type .. "Channels"]
+      else
+	 channel_type = clib[channel_type .. "Channel"]
+      end
+      status = clib.MagickGammaImageChannel(self.wand, channel_type, gamma)
+   else
+      status = clib.MagickGammaImage(self.wand, gamma)
+   end
+   if status == 0 then
+      magick_error(self, 'error gamma correction')
+   end
+   return self
 end
 
 -- Export to Blob:
