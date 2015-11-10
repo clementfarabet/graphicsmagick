@@ -504,7 +504,7 @@ function Image:depth(depth)
       return self
    else
       -- Get depth:
-      local depth = clib.MagickGetImageDepth(self.wand)
+      depth = clib.MagickGetImageDepth(self.wand)
    end
    --
    return depth
