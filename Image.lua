@@ -657,7 +657,7 @@ function Image:negate()
   return self
 end
 
--- Change image background coloe
+-- Change image background color
 function Image:setBackground(r, g, b)
   -- Create PixelWand:
   local pixelwand = ffi.gc(clib.NewPixelWand(), function(pixelwand)
