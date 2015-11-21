@@ -73,16 +73,16 @@ local function gamma_resize()
    image.display({image = gamma_resize:toTensor("float", "RGB", "DHW"),
 		  min = 0, max = 1, legend = "gamma resize box"})
 
-   -- Jinc filter
-   resize = src:clone():size(width * 0.5, height * 0.5, "Jinc")
+   -- Lanczos filter
+   resize = src:clone():size(width * 0.5, height * 0.5, "Lanczos")
    image.display({image = resize:toTensor("float", "RGB", "DHW"),
-		  min = 0, max = 1, legend = "resize jinc"})
+		  min = 0, max = 1, legend = "resize lanczos"})
    gamma_resize = src:clone():
       gammaCorrection(gamma):
-      size(width * 0.5, height * 0.5, "Jinc"):
+      size(width * 0.5, height * 0.5, "Lanczos"):
       gammaCorrection(1.0 / gamma)
    image.display({image = gamma_resize:toTensor("float", "RGB", "DHW"),
-		  min = 0, max = 1, legend = "gamma resize jinc"})
+		  min = 0, max = 1, legend = "gamma resize lanczos"})
 end
 
 gamma_correction()
