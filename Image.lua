@@ -55,25 +55,9 @@ ffi.cdef
     CubicFilter,
     CatromFilter,
     MitchellFilter,
-    JincFilter,
-    SincFilter,
-    SincFastFilter,
-    KaiserFilter,
-    WelshFilter,
-    ParzenFilter,
-    BohmanFilter,
-    BartlettFilter,
-    LagrangeFilter,
     LanczosFilter,
-    LanczosSharpFilter,
-    Lanczos2Filter,
-    Lanczos2SharpFilter,
-    RobidouxFilter,
-    RobidouxSharpFilter,
-    CosineFilter,
-    SplineFilter,
-    LanczosRadiusFilter,
-    SentinelFilter
+    BesselFilter,
+    SincFilter
   } FilterTypes;
 
   typedef enum
