@@ -292,6 +292,12 @@ ffi.cdef
   unsigned int MagickGammaImageChannel(MagickWand *wand,
                                        const ChannelType channel_type,
                                        const double gamma);
+
+  unsigned int MagickUnsharpMaskImage(MagickWand* wand,
+                                      const double radius,
+                                      const double sigma,
+                                      const double amount,
+                                      const double threshold);
 ]]
 -- Load lib:
 local clib = ffi.load('GraphicsMagickWand')
@@ -779,6 +785,15 @@ function Image:gammaCorrection(gamma, channel_type)
    end
    if status == 0 then
       magick_error(self, 'error gamma correction')
+   end
+   return self
+end
+
+-- Unsharp Mask
+function Image:unsharpMask(radius, sigma, amount, threshold)
+   local status = clib.MagickUnsharpMaskImage(self.wand, radius, sigma, amount, threshold)
+   if status == 0 then
+      magick_error(self, 'error unsharp mask')
    end
    return self
 end
