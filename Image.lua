@@ -213,7 +213,7 @@ ffi.cdef
   unsigned int MagickSetSize( MagickWand *wand, const unsigned long columns, const unsigned long rows );
 
   // Image format (JPEG, PNG, ...)
-  const char* MagickGetImageFormat(MagickWand* wand);
+  char* MagickGetImageFormat(MagickWand* wand);
   MagickBooleanType MagickSetImageFormat(MagickWand* wand, const char* format);
 
   // Raw data:
@@ -511,7 +511,7 @@ function Image:format(format)
       return self
    else
       -- Get format:
-      format = ffi.string(clib.MagickGetImageFormat(self.wand))
+      format = ffi.string(ffi.gc(clib.MagickGetImageFormat(self.wand), ffi.C.free))
    end
    return format
 end
