@@ -22,7 +22,6 @@ wget http://pilotfiber.dl.sourceforge.net/project/graphicsmagick/graphicsmagick/
 tar xzf GraphicsMagick-1.3.23.tar.gz 
 cd GraphicsMagick-1.3.23/
 ./configure --enable-shared
-./configure --enable-shared
 make
 sudo make install
 ```
