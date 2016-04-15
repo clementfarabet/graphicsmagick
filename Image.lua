@@ -270,6 +270,7 @@ ffi.cdef
 
   // ImageType
   unsigned int MagickSetImageType( MagickWand *, const ImageType );
+  ImageType MagickGetImageType( MagickWand *);
 
   DrawingWand *MagickNewDrawingWand( void );
   void MagickDestroyDrawingWand( DrawingWand *drawing_wand );
@@ -498,6 +499,36 @@ function Image:depth(depth)
    end
    --
    return depth
+end
+
+-- ImageType:
+-- ImageType available:
+local image_types = {
+   [0] = "Undefined",
+   "Bilevel",
+   "Grayscale",
+   "GrayscaleMatte",
+   "Palette",
+   "PaletteMatte",
+   "TrueColor",
+   "TrueColorMatte",
+   "ColorSeparation",
+   "ColorSeparationMatte",
+   "Optimize"
+}
+function Image:type(image_type)
+   -- Set or get:
+   if image_type then
+      -- Set type:
+      clib.MagickSetImageType(self.wand, clib[image_type .. "Type"])
+
+      -- return self
+      return self
+   else
+      -- Get type:
+      image_type = clib.MagickGetImageType(self.wand)
+      return image_types[tonumber(image_type)]
+   end
 end
 
 -- Format:
