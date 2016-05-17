@@ -826,10 +826,10 @@ end
 
 -- Sharpen
 function Image:sharpen(radius, sigma)
-   if radius = nil then
+   if radius == nil then
       radius = 0
    end
-   if sigma = nil then
+   if sigma == nil then
       sigma = 1
    end
    local status = clib.MagickSharpenImage(self.wand, radius, sigma)
