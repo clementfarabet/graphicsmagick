@@ -183,6 +183,13 @@ image:flip()
 image:flop()
 ```
 
+Sharpen:
+
+```lua
+-- Sharpens the image whith radius=0, sigma=0.6
+image:sharpen(0, 0.6)
+```
+
 Show an image (this makes use of Tensors, and Torch's Qt backend):
 
 ```lua

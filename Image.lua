@@ -294,6 +294,10 @@ ffi.cdef
                                        const ChannelType channel_type,
                                        const double gamma);
 
+  unsigned int MagickSharpenImage(MagickWand *wand,
+                                  const double radius,
+                                  const double sigma); 
+
   unsigned int MagickUnsharpMaskImage(MagickWand* wand,
                                       const double radius,
                                       const double sigma,
@@ -816,6 +820,21 @@ function Image:gammaCorrection(gamma, channel_type)
    end
    if status == 0 then
       magick_error(self, 'error gamma correction')
+   end
+   return self
+end
+
+-- Sharpen
+function Image:sharpen(radius, sigma)
+   if radius == nil then
+      radius = 0
+   end
+   if sigma == nil then
+      sigma = 1
+   end
+   local status = clib.MagickSharpenImage(self.wand, radius, sigma)
+   if status == 0 then
+      magick_error(self, 'error sharp image')
    end
    return self
 end
