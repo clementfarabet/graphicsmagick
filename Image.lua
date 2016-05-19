@@ -436,7 +436,7 @@ function Image:save(path, quality)
 end
 
 -- Size:
-function Image:size(width,height,filter)
+function Image:size(width,height,filter,blur)
    -- Set or get:
    if width or height then
       -- Get filter:
@@ -469,9 +469,10 @@ function Image:size(width,height,filter)
             width = box * cwidth/cheight
          end
       end
+      blur = blur or 1.0
 
       -- Set dimensions:
-      local status = clib.MagickResizeImage(self.wand, width, height, filter, 1.0)
+      local status = clib.MagickResizeImage(self.wand, width, height, filter, blur)
 
       -- Error?
       if status == 0 then
