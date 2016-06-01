@@ -170,6 +170,16 @@ ffi.cdef
     OptimizeType
   } ImageType;
 
+  // InterlaceType
+  typedef enum
+  {
+    UndefinedInterlace,
+    NoInterlace,
+    LineInterlace,
+    PlaneInterlace,
+    PartitionInterlace
+  } InterlaceType;
+
   // Global context:
   void MagickWandGenesis();
   void InitializeMagick();
@@ -215,6 +225,10 @@ ffi.cdef
   // Image format (JPEG, PNG, ...)
   char* MagickGetImageFormat(MagickWand* wand);
   MagickBooleanType MagickSetImageFormat(MagickWand* wand, const char* format);
+
+  // Image interlace
+  unsigned int MagickSetInterlaceScheme( MagickWand *wand,
+                                     const InterlaceType interlace_scheme );
 
   // Raw data:
   unsigned int MagickGetImagePixels( MagickWand *wand, const long x_offset, const long y_offset,
@@ -534,6 +548,18 @@ function Image:type(image_type)
       image_type = clib.MagickGetImageType(self.wand)
       return image_types[tonumber(image_type)]
    end
+end
+
+-- Interlace
+function Image:interlace(interlace)
+   if interlace == nil then
+      interlace = 'Undefined'
+   end
+   local status = clib.MagickSetInterlaceScheme(self.wand, clib[interlace..'Interlace'])
+   if status == 0 then
+      magick_error(self, 'error set interlace')
+   end
+   return self  
 end
 
 -- Format:
