@@ -276,7 +276,7 @@ ffi.cdef
   unsigned int MagickSetImageColorspace( MagickWand *wand, const ColorspaceType colorspace );
 
   // Description
-  const char *MagickDescribeImage( MagickWand *wand );
+  char *MagickDescribeImage( MagickWand *wand );
 
   // SamplingFactors
   double *MagickGetSamplingFactors(MagickWand *,unsigned long *);
