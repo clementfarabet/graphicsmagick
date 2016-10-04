@@ -46,6 +46,7 @@ local function info(path,simple,extexif)
    end
 
    -- parse Exif Data
+   local loadstring = loadstring or load
    local exif = readarg(path,'%[exif:*]')
    local formatted = (exif..'\n'):gsub('exif:(.-)=(.-)\n', '["%1"] = [========[%2]========],\n ')
    local ok,exif = pcall(loadstring( 'return {'..formatted..'}' ))
