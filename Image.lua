@@ -318,11 +318,17 @@ ffi.cdef
                                       const double amount,
                                       const double threshold);
 ]]
--- Load lib:
-local clib = ffi.load('GraphicsMagickWand')
 
--- Initialize lib:
-clib.InitializeMagick();
+-- Load and initialize lib:
+local magiclib, clib = nil, nil
+if ffi.os == 'Windows' then
+    magiclib = ffi.load('CORE_RL_magick_.dll')
+    clib = ffi.load('CORE_RL_wand_.dll')
+    magiclib.InitializeMagick();
+else
+    clib = ffi.load('GraphicsMagickWand')
+    clib.InitializeMagick();
+end
 
 -- Image object:
 local Image = {

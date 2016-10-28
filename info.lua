@@ -2,19 +2,22 @@
 -- Dependencies:
 require 'sys'
 
--- Detect/find GM:
-local found = sys.fexecute('which identify'):find('identify')
+-- Detect/find identify:
+local found, util
+if sys.uname() == 'Windows' then
+  found = sys.fexecute('where gm'):find('gm')
+  util = 'gm identify'
+else
+  found = sys.fexecute('which identify'):find('identify')
+  util = 'identify'
+end
+
+if not found then
+  return nil
+end
 
 -- Exif parser
 local parseExif = require 'graphicsmagick.exif'
-
--- Which util:
-local util
-if found then
-   util = 'identify '
-else
-   return nil
-end
 
 -- Helper
 local function readarg(file, arg)
