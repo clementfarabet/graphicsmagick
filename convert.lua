@@ -3,7 +3,7 @@
 require 'sys'
 
 -- Detect/find GM:
-local findgm = sys.uname() == 'Windows' and 'where gm' or 'which gm'
+local findgm = sys.uname() == 'windows' and 'where gm' or 'which gm'
 local found = sys.fexecute(findgm):find('gm')
 if not found then
    print 'gm (GraphicsMagick) binary not found, please install (see www.graphicsmagick.org)'

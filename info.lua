@@ -4,7 +4,7 @@ require 'sys'
 
 -- Detect/find identify:
 local found, util
-if sys.uname() == 'Windows' then
+if sys.uname() == 'windows' then
   found = sys.fexecute('where gm'):find('gm')
   util = 'gm identify'
 else
