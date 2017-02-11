@@ -317,6 +317,11 @@ ffi.cdef
                                       const double sigma,
                                       const double amount,
                                       const double threshold);
+
+  // Profile
+  unsigned char* MagickGetImageProfile(MagickWand *wand,const char *name,unsigned long *length);
+  unsigned int MagickProfileImage(MagickWand* wand, const char* name,
+                                  const void* profile, const size_t length);
 ]]
 
 -- Load and initialize lib:
@@ -877,6 +882,37 @@ function Image:unsharpMask(radius, sigma, amount, threshold)
    local status = clib.MagickUnsharpMaskImage(self.wand, radius, sigma, amount, threshold)
    if status == 0 then
       magick_error(self, 'error unsharp mask')
+   end
+   return self
+end
+
+-- Profile
+function Image:profile(name, profile)
+   if profile then
+      -- set
+      local status = clib.MagickProfileImage(self.wand, name, profile, #profile)
+      if status == 0 then
+	 magick_error(self, 'error profile image')
+      end
+      return self
+   else
+      -- get
+      local len = ffi.new('unsigned long[1]', 0)
+      profile = clib.MagickGetImageProfile(self.wand, name, len)
+      len = tonumber(len[0])
+      if len > 0 then
+	 profile = ffi.string(ffi.gc(profile, clib.MagickRelinquishMemory), len)
+      else
+	 profile = nil
+      end
+      return profile
+   end
+end
+function Image:removeProfile(name)
+   name = name or "*"
+   local status = clib.MagickProfileImage(self.wand, name, nil, 0)
+   if status == 0 then
+      magick_error(self, 'error profile image')
    end
    return self
 end
