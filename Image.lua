@@ -628,7 +628,7 @@ function Image:colorspace(colorspace)
       return self
    else
       -- Get format:
-      colorspace = tonumber(ffi.cast('double', clib.MagickGetImageColorspace(self.wand)))
+      colorspace = tonumber(clib.MagickGetImageColorspace(self.wand))
 
       colorspace = colorspaces[colorspace]
    end
