@@ -1,6 +1,6 @@
 -- Package:
 local Image = require 'graphicsmagick.Image'
-local convert = require 'graphicsmagick.convert'
+--local convert = require 'graphicsmagick.convert'
 local parseExif = require 'graphicsmagick.exif'
 local info = require 'graphicsmagick.info'
 
@@ -22,7 +22,7 @@ end
 -- Export:
 return {
    Image = Image,
-   convert = convert,
+--   convert = convert,
    parseExif = parseExif,
    info = info,
    load = load,

@@ -5,6 +5,42 @@ A simple Lua wrapper to [GraphicsMagick](http://www.graphicsmagick.org).
 
 Only tested on Mac OSX, with GraphicsMagick installed via Homebrew.
 
+install on Linux
+-------
+install luajit
+```shell
+wget http://luajit.org/download/LuaJIT-2.0.4.tar.gz
+tar zxvf LuaJIT-2.0.4.tar.gz 
+cd LuaJIT-2.0.4/
+make
+sudo make install
+```
+
+install graphicsmagick lib
+```shell
+wget http://pilotfiber.dl.sourceforge.net/project/graphicsmagick/graphicsmagick/1.3.23/GraphicsMagick-1.3.23.tar.gz
+tar xzf GraphicsMagick-1.3.23.tar.gz 
+cd GraphicsMagick-1.3.23/
+./configure --enable-shared
+make
+sudo make install
+```
+install luarocks
+```shell
+wget http://keplerproject.github.io/luarocks/releases/luarocks-2.3.0.tar.gz
+tar zxvf luarocks-2.3.0.tar.gz
+cd luarocks-2.3.0
+./configure --with-lua="/usr/local" --lua-suffix="jit" --with-lua-include="/usr/local/include/luajit-2.0" 
+make build
+sudo make install
+```
+
+install require libs
+```shell
+sudo luarocks --server=https://raw.github.com/torch/rocks/master install sys
+sudo luarocks --server=https://raw.github.com/torch/rocks/master install paths
+```
+
 gm.convert
 ----------
 
