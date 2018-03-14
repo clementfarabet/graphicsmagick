@@ -322,6 +322,8 @@ ffi.cdef
   unsigned char* MagickGetImageProfile(MagickWand *wand,const char *name,unsigned long *length);
   unsigned int MagickProfileImage(MagickWand* wand, const char* name,
                                   const void* profile, const size_t length);
+  // removes all profiles and text attributes from the image
+  unsigned int MagickStripImage( MagickWand *wand );
 ]]
 
 -- Load and initialize lib:
@@ -495,7 +497,8 @@ function Image:size(width,height,filter,blur)
          end
       end
       blur = blur or 1.0
-
+      -- remove profiles default to reduce the byte size
+      clib.MagickStripImage(self.wand)
       -- Set dimensions:
       local status = clib.MagickResizeImage(self.wand, width, height, filter, blur)
 
@@ -512,6 +515,13 @@ function Image:size(width,height,filter,blur)
    end
    --
    return width,height
+end
+
+-- MagickStripImage:
+function Image:strip()
+   clib.MagickStripImage(self.wand)
+   -- return self
+   return self
 end
 
 -- Depth:
